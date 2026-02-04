@@ -1,0 +1,48 @@
+{# Ticket card displayed in a column #}
+
+<div class="ticket-card ticket-type-{{ ticket.ticket_type.value }}"
+     id="ticket-{{ ticket.id }}">
+
+    <div class="ticket-header">
+        <span class="ticket-type-badge badge-{{ ticket.ticket_type.value }}">
+            {{ ticket.ticket_type.value | upper }}
+        </span>
+        <span class="ticket-name">{{ ticket.name }}</span>
+    </div>
+
+    {% if ticket.description %}
+    <p class="ticket-description">{{ ticket.description | truncate(100) }}</p>
+    {% endif %}
+
+    {% if ticket.children %}
+    <div class="ticket-children-count">
+        {{ ticket.children | length }} sub-item{% if ticket.children | length != 1 %}s{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="ticket-actions">
+        <!-- View/Edit button -->
+        <button
+            hx-get="/tickets/{{ ticket.id }}"
+            hx-target="#modal-content"
+            hx-swap="innerHTML"
+            class="btn btn-small">
+            View
+        </button>
+
+        <!-- Move buttons - one for each other status -->
+        <div class="move-buttons">
+            {% for target_status in statuses %}
+            {% if target_status != ticket.status %}
+            <button
+                hx-post="/tickets/{{ ticket.id }}/move?status={{ target_status.value }}"
+                hx-target="#column-{{ target_status.value }}"
+                hx-swap="innerHTML"
+                class="btn btn-small btn-move">
+                &rarr; {{ target_status.value | replace("-", " ") | title }}
+            </button>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>

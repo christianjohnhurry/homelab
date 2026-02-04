@@ -1,0 +1,16 @@
+{# Column partial - can be rendered standalone for HTMX updates #}
+
+<div class="column-header column-header-{{ status.value }}">
+    <h2>{{ status.value | replace("-", " ") | title }}</h2>
+    <span class="count">{{ tickets | length }}</span>
+</div>
+
+<div class="column-body">
+    {% for ticket in tickets %}
+    {% include "partials/ticket_card.html" %}
+    {% endfor %}
+
+    {% if not tickets %}
+    <div class="empty-column">No tickets</div>
+    {% endif %}
+</div>

@@ -1,0 +1,68 @@
+{# Ticket detail view #}
+
+<div class="ticket-detail">
+    <div class="ticket-detail-header">
+        <span class="ticket-type-badge badge-{{ ticket.ticket_type.value }}">
+            {{ ticket.ticket_type.value | upper }}
+        </span>
+        <h2>{{ ticket.name }}</h2>
+    </div>
+
+    <div class="ticket-meta">
+        <p><strong>Status:</strong> {{ ticket.status.value | replace("-", " ") | title }}</p>
+        <p><strong>Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>Updated:</strong> {{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        {% if ticket.repo_url %}
+        <p><strong>Repository:</strong> <a href="{{ ticket.repo_url }}" target="_blank">{{ ticket.repo_url }}</a></p>
+        {% endif %}
+        {% if ticket.parent %}
+        <p><strong>Parent:</strong> [{{ ticket.parent.ticket_type.value | upper }}] {{ ticket.parent.name }}</p>
+        {% endif %}
+    </div>
+
+    {% if ticket.description %}
+    <div class="ticket-description-full">
+        <h3>Description</h3>
+        <p>{{ ticket.description }}</p>
+    </div>
+    {% endif %}
+
+    {% if ticket.children %}
+    <div class="ticket-children">
+        <h3>Sub-items ({{ ticket.children | length }})</h3>
+        <ul>
+            {% for child in ticket.children %}
+            <li>
+                <span class="ticket-type-badge badge-{{ child.ticket_type.value }} badge-small">
+                    {{ child.ticket_type.value | upper }}
+                </span>
+                {{ child.name }}
+                <span class="status-pill status-{{ child.status.value }}">
+                    {{ child.status.value | replace("-", " ") }}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="ticket-detail-actions">
+        <button
+            hx-get="/tickets/{{ ticket.id }}/edit"
+            hx-target="#modal-content"
+            hx-swap="innerHTML"
+            class="btn btn-primary">
+            Edit
+        </button>
+        <button
+            hx-post="/tickets/{{ ticket.id }}/delete"
+            hx-target="body"
+            hx-swap="none"
+            hx-confirm="Are you sure you want to delete this ticket? This will also delete all sub-items."
+            hx-on::after-request="if(event.detail.successful) { location.reload(); }"
+            class="btn btn-danger">
+            Delete
+        </button>
+        <button type="button" class="btn" onclick="closeModal()">Close</button>
+    </div>
+</div>

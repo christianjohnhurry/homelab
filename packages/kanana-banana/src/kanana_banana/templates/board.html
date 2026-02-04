@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Board | Kanana Banana{% endblock %}
+
+{% block content %}
+<div class="board">
+    {% for status in statuses %}
+    <div class="column" id="column-{{ status.value }}">
+        {% with tickets=tickets_by_status[status] %}
+        {% include "partials/column.html" %}
+        {% endwith %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
