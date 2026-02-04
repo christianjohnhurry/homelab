@@ -1,0 +1,19 @@
+[project]
+name = "homelab"
+version = "0.1.0"
+requires-python = ">= 3.12"
+dependencies = []
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-64"]
+
+[tool.pixi.pypi-dependencies]
+homelab = { path = ".", editable = true }
+kanana-banana = { path = "packages/kanana-banana", editable = true }
+
+[tool.pixi.tasks]
