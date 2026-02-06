@@ -1,10 +1,15 @@
-"""HTML routes for the kanban board UI."""
+"""
+HTML routes for the kanban board UI.
+
+This router handles the main board views and ticket operations.
+All board views are now scoped to a specific board (repository).
+"""
 
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi import status as http_status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import Session
 
 from kanana_banana.templating import templates
@@ -16,83 +21,150 @@ from kanana_banana import crud
 router = APIRouter(tags=["board"])
 
 
-def get_context(request: Request) -> dict:
-    """Base context for all templates."""
+def get_context(request: Request, session: Session) -> dict:
+    """
+    Base context for all templates.
+
+    Now includes the list of boards for the sidebar navigation.
+    """
     return {
         "request": request,
         "statuses": list(TicketStatus),
         "ticket_types": list(TicketType),
+        "boards": crud.list_boards(session),  # For sidebar
     }
 
 
+# =============================================================================
+# Main Entry Points
+# =============================================================================
+
+
 @router.get("/", response_class=HTMLResponse)
-def board(
+def index(
     request: Request,
     session: Session = Depends(get_session),
 ):
-    """Render the full kanban board page."""
-    # Get all tickets grouped by status
-    all_tickets = crud.list_tickets(session)
+    """
+    Landing page - redirect to first board or show empty state.
+
+    If there are boards, redirects to the first one.
+    If no boards exist, shows a prompt to create one.
+    """
+    boards = crud.list_boards(session)
+    if boards:
+        # Redirect to the first board
+        return RedirectResponse(url=f"/boards/{boards[0].id}", status_code=302)
+
+    # No boards - show empty state
+    context = get_context(request, session)
+    context["no_boards"] = True
+    context["board"] = None
+    context["current_board_id"] = None
+    context["tickets_by_status"] = {s: [] for s in TicketStatus}
+    return templates.TemplateResponse("board.html", context)
+
+
+@router.get("/boards/{board_id}", response_class=HTMLResponse)
+def board_view(
+    request: Request,
+    board_id: int,
+    session: Session = Depends(get_session),
+):
+    """Render the kanban board for a specific board (repository)."""
+    board = crud.get_board(session, board_id)
+    if board is None:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail="Board not found",
+        )
+
+    # Get tickets for this board, grouped by status
+    all_tickets = crud.list_tickets(session, board_id=board_id)
     tickets_by_status = {s: [] for s in TicketStatus}
     for ticket in all_tickets:
         tickets_by_status[ticket.status].append(ticket)
 
-    context = get_context(request)
+    context = get_context(request, session)
+    context["board"] = board
+    context["current_board_id"] = board_id
     context["tickets_by_status"] = tickets_by_status
+    context["no_boards"] = False
 
     return templates.TemplateResponse("board.html", context)
 
 
-@router.get("/board/column/{status}", response_class=HTMLResponse)
+# =============================================================================
+# Column Routes (HTMX partials)
+# =============================================================================
+
+
+@router.get("/boards/{board_id}/column/{status}", response_class=HTMLResponse)
 def get_column(
     request: Request,
+    board_id: int,
     status: TicketStatus,
     session: Session = Depends(get_session),
 ):
     """
-    Render a single column (HTMX partial).
+    Render a single column for a board (HTMX partial).
 
-    This is used by HTMX to refresh a column after a ticket moves.
+    Used by HTMX to refresh a column after a ticket moves.
     """
-    tickets = crud.list_tickets(session, status=status)
+    tickets = crud.list_tickets(session, status=status, board_id=board_id)
 
-    context = get_context(request)
+    context = get_context(request, session)
     context["status"] = status
     context["tickets"] = tickets
+    context["current_board_id"] = board_id
 
     return templates.TemplateResponse("partials/column.html", context)
 
 
-@router.get("/tickets/new", response_class=HTMLResponse)
+# =============================================================================
+# Ticket Form Routes
+# =============================================================================
+
+
+@router.get("/boards/{board_id}/tickets/new", response_class=HTMLResponse)
 def new_ticket_form(
     request: Request,
+    board_id: int,
     session: Session = Depends(get_session),
 ):
-    """Render the create ticket form (HTMX partial)."""
-    # Get possible parents (projects and tasks)
-    projects = crud.list_tickets(session, ticket_type=TicketType.PROJECT)
-    tasks = crud.list_tickets(session, ticket_type=TicketType.TASK)
+    """Render the create ticket form for a specific board (HTMX partial)."""
+    board = crud.get_board(session, board_id)
+    if board is None:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail="Board not found",
+        )
 
-    context = get_context(request)
+    # Get possible parents - only from this board
+    projects = crud.list_tickets(session, ticket_type=TicketType.PROJECT, board_id=board_id)
+    tasks = crud.list_tickets(session, ticket_type=TicketType.TASK, board_id=board_id)
+
+    context = get_context(request, session)
     context["ticket"] = None
     context["possible_parents"] = projects + tasks
+    context["current_board_id"] = board_id
+    context["board"] = board
 
     return templates.TemplateResponse("partials/ticket_form.html", context)
 
 
-@router.post("/tickets", response_class=HTMLResponse)
+@router.post("/boards/{board_id}/tickets", response_class=HTMLResponse)
 def create_ticket(
     request: Request,
+    board_id: int,
     name: str = Form(...),
     ticket_type: TicketType = Form(...),
     status: TicketStatus = Form(...),
     parent_id: Optional[str] = Form(None),
-    repo_url: Optional[str] = Form(None),
     description: str = Form(""),
     session: Session = Depends(get_session),
 ):
-    """Handle ticket creation from form submission."""
-    # Convert empty string to None for parent_id
+    """Handle ticket creation for a specific board."""
     parent_id_int = int(parent_id) if parent_id else None
 
     ticket_create = crud.TicketCreate(
@@ -100,8 +172,8 @@ def create_ticket(
         ticket_type=ticket_type,
         status=status,
         parent_id=parent_id_int,
-        repo_url=repo_url if repo_url else None,
         description=description,
+        board_id=board_id,  # Ticket belongs to this board
     )
 
     try:
@@ -112,8 +184,12 @@ def create_ticket(
             detail=str(e),
         )
 
-    # Return empty response - the form uses JS to reload the page on success
     return HTMLResponse("")
+
+
+# =============================================================================
+# Ticket Detail/Edit Routes
+# =============================================================================
 
 
 @router.get("/tickets/{ticket_id}", response_class=HTMLResponse)
@@ -130,8 +206,9 @@ def get_ticket_detail(
             detail="Ticket not found",
         )
 
-    context = get_context(request)
+    context = get_context(request, session)
     context["ticket"] = ticket
+    context["current_board_id"] = ticket.board_id
 
     return templates.TemplateResponse("partials/ticket_detail.html", context)
 
@@ -150,17 +227,22 @@ def edit_ticket_form(
             detail="Ticket not found",
         )
 
-    # Get possible parents based on ticket type
+    # Get possible parents based on ticket type - only from same board
     if ticket.ticket_type == TicketType.TASK:
-        possible_parents = crud.list_tickets(session, ticket_type=TicketType.PROJECT)
+        possible_parents = crud.list_tickets(
+            session, ticket_type=TicketType.PROJECT, board_id=ticket.board_id
+        )
     elif ticket.ticket_type == TicketType.SUBTASK:
-        possible_parents = crud.list_tickets(session, ticket_type=TicketType.TASK)
+        possible_parents = crud.list_tickets(
+            session, ticket_type=TicketType.TASK, board_id=ticket.board_id
+        )
     else:
         possible_parents = []
 
-    context = get_context(request)
+    context = get_context(request, session)
     context["ticket"] = ticket
     context["possible_parents"] = possible_parents
+    context["current_board_id"] = ticket.board_id
 
     return templates.TemplateResponse("partials/ticket_form.html", context)
 
@@ -172,7 +254,6 @@ def update_ticket(
     name: str = Form(...),
     status: TicketStatus = Form(...),
     parent_id: Optional[str] = Form(None),
-    repo_url: Optional[str] = Form(None),
     description: str = Form(""),
     session: Session = Depends(get_session),
 ):
@@ -183,7 +264,6 @@ def update_ticket(
         name=name,
         status=status,
         parent_id=parent_id_int,
-        repo_url=repo_url if repo_url else None,
         description=description,
     )
 
@@ -204,9 +284,15 @@ def update_ticket(
     return HTMLResponse("")
 
 
-@router.post("/tickets/{ticket_id}/move", response_class=HTMLResponse)
+# =============================================================================
+# Ticket Move/Delete Routes
+# =============================================================================
+
+
+@router.post("/boards/{board_id}/tickets/{ticket_id}/move", response_class=HTMLResponse)
 def move_ticket(
     request: Request,
+    board_id: int,
     ticket_id: int,
     status: TicketStatus,
     session: Session = Depends(get_session),
@@ -215,6 +301,7 @@ def move_ticket(
     Move a ticket to a new status column.
 
     Returns the updated target column HTML, plus an OOB swap for the source column.
+    This allows both columns to update with a single request.
     """
     ticket = crud.get_ticket(session, ticket_id)
     if ticket is None:
@@ -226,27 +313,27 @@ def move_ticket(
     old_status = ticket.status
     crud.update_ticket_status(session, ticket_id, status)
 
-    # Render the target column (this is the main response)
-    target_tickets = crud.list_tickets(session, status=status)
-    context = get_context(request)
+    # Render the target column
+    context = get_context(request, session)
+    context["current_board_id"] = board_id
+
+    target_tickets = crud.list_tickets(session, status=status, board_id=board_id)
     context["status"] = status
     context["tickets"] = target_tickets
     target_html = templates.TemplateResponse(
         "partials/column.html", context
     ).body.decode()
 
-    # If the ticket actually moved (not just refreshed), also update the source column
+    # If the ticket moved (not just refreshed), also update the source column
     if old_status != status:
-        source_tickets = crud.list_tickets(session, status=old_status)
+        source_tickets = crud.list_tickets(session, status=old_status, board_id=board_id)
         context["status"] = old_status
         context["tickets"] = source_tickets
         source_html = templates.TemplateResponse(
             "partials/column.html", context
         ).body.decode()
 
-        # Use HTMX out-of-band swap to update the source column too
-        # The hx-swap-oob="innerHTML" tells HTMX to find the element with this id
-        # and replace its innerHTML
+        # HTMX out-of-band swap updates the source column too
         oob_html = f'<div id="column-{old_status.value}" hx-swap-oob="innerHTML">{source_html}</div>'
         return HTMLResponse(target_html + oob_html)
 
@@ -259,7 +346,7 @@ def delete_ticket(
     ticket_id: int,
     session: Session = Depends(get_session),
 ):
-    """Delete a ticket."""
+    """Delete a ticket and all its children."""
     deleted = crud.delete_ticket(session, ticket_id)
     if not deleted:
         raise HTTPException(
@@ -267,5 +354,4 @@ def delete_ticket(
             detail="Ticket not found",
         )
 
-    # Return empty - the button uses JS to reload the page
     return HTMLResponse("")
