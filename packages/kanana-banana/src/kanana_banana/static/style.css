@@ -427,3 +427,172 @@ main {
     gap: 0.5rem;
     margin-top: 1.5rem;
 }
+
+/* ==========================================================================
+   Sidebar and App Layout
+   ========================================================================== */
+
+/* Main app layout with sidebar */
+.app-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background: #34495e;
+    color: white;
+    padding: 1rem;
+    flex-shrink: 0;
+}
+
+.sidebar h2 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+}
+
+.board-list {
+    list-style: none;
+}
+
+.board-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.25rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.board-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.board-item.active {
+    background: #3498db;
+}
+
+.board-item a {
+    color: white;
+    text-decoration: none;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.board-item .btn-icon {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    padding: 0.25rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 0.9rem;
+}
+
+.board-item:hover .btn-icon {
+    opacity: 1;
+}
+
+.board-item .btn-icon:hover {
+    color: white;
+}
+
+.empty-boards {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 1rem;
+    font-style: italic;
+}
+
+/* Adjust main content in app layout */
+.app-layout main {
+    flex: 1;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+/* Board header (above the columns) */
+.board-header {
+    margin-bottom: 1rem;
+}
+
+.board-header h2 {
+    margin-bottom: 0.25rem;
+    font-size: 1.25rem;
+}
+
+.repo-link {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    text-decoration: none;
+}
+
+.repo-link:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* Empty state (no boards) */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    text-align: center;
+    padding: 2rem;
+}
+
+.empty-state h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.empty-state p {
+    color: #7f8c8d;
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+}
+
+.btn-large {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Responsive sidebar */
+@media (max-width: 768px) {
+    .app-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 0.75rem;
+    }
+
+    .board-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .board-item {
+        flex: 0 0 auto;
+        margin-bottom: 0;
+    }
+
+    .board-item .btn-icon {
+        opacity: 1;
+    }
+}
