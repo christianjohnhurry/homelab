@@ -94,6 +94,32 @@ def board_view(
     return templates.TemplateResponse("board.html", context)
 
 
+@router.get("/boards/{board_id}/tree", response_class=HTMLResponse)
+def board_tree_view(
+    request: Request,
+    board_id: int,
+    session: Session = Depends(get_session),
+):
+    """Render the banana tree visualization for a specific board."""
+    board = crud.get_board(session, board_id)
+    if board is None:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail="Board not found",
+        )
+
+    # Get projects with their full hierarchy (tasks and subtasks)
+    projects = crud.get_board_tree(session, board_id)
+
+    context = get_context(request, session)
+    context["board"] = board
+    context["current_board_id"] = board_id
+    context["projects"] = projects
+    context["no_boards"] = False
+
+    return templates.TemplateResponse("tree_view.html", context)
+
+
 # =============================================================================
 # Column Routes (HTMX partials)
 # =============================================================================

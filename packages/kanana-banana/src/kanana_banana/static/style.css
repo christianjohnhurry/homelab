@@ -596,3 +596,341 @@ main {
         opacity: 1;
     }
 }
+
+/* ==========================================================================
+   View Toggle
+   ========================================================================== */
+
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.view-toggle .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+/* ==========================================================================
+   Banana Tree Visualization
+   ========================================================================== */
+
+.banana-tree {
+    position: relative;
+    min-height: calc(100vh - 200px);
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+/* Tree Trunk - Centered */
+.tree-trunk {
+    width: 50px;
+    min-height: 100%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.trunk-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.trunk-path {
+    fill: #8B4513;
+    stroke: #654321;
+    stroke-width: 1;
+}
+
+/* Empty state for tree */
+.empty-tree {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #7f8c8d;
+    font-style: italic;
+    position: absolute;
+    left: 50%;
+    top: 100px;
+    transform: translateX(-50%);
+}
+
+/* Individual Branch - Positioned left or right of trunk */
+.tree-branch {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    width: 320px;
+}
+
+/* Left branches */
+.tree-branch.branch-left {
+    right: calc(50% + 25px);
+    align-items: flex-end;
+}
+
+.tree-branch.branch-left .branch-svg {
+    transform: scaleX(-1);
+}
+
+.tree-branch.branch-left .hanging-tasks {
+    align-items: flex-end;
+}
+
+/* Right branches */
+.tree-branch.branch-right {
+    left: calc(50% + 25px);
+    align-items: flex-start;
+}
+
+.branch-svg {
+    width: 80px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+.branch-path {
+    fill: none;
+    stroke: #8B4513;
+    stroke-width: 6;
+    stroke-linecap: round;
+}
+
+/* Project as a big horizontal banana */
+.project-banana {
+    width: 180px;
+    height: 50px;
+    border-radius: 50% / 45%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    z-index: 3;
+}
+
+.project-banana:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.project-banana .banana-label {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 90%;
+    padding: 0 0.5rem;
+}
+
+/* Hanging tasks container */
+.hanging-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0 1rem;
+}
+
+/* Task row - one row per status */
+.task-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* Empty branch state */
+.empty-branch {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+}
+
+.empty-branch-text {
+    color: #bdc3c7;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+/* Individual Banana (a task) */
+.banana {
+    width: 80px;
+    height: 32px;
+    border-radius: 50% / 40%;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: rgba(0, 0, 0, 0.7);
+    overflow: visible;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-weight: 500;
+}
+
+.banana:hover {
+    transform: scale(1.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.task-banana {
+    width: 85px;
+    height: 34px;
+    font-size: 0.7rem;
+}
+
+/* Task stem connecting banana to row above */
+.task-stem {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 18px;
+}
+
+.task-stem path {
+    fill: none;
+    stroke: #2d5016;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+/* Banana label */
+.banana-label {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 85%;
+    padding: 0 0.25rem;
+}
+
+/* Subtask count badge on banana */
+.subtask-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #2c3e50;
+    color: white;
+    font-size: 0.55rem;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Banana Status Colors (Ripeness Theme) */
+
+/* To-Do: Gray (unripe) */
+.banana.status-to-do,
+.project-banana.status-to-do {
+    background: linear-gradient(135deg, #a8b5a0 0%, #8a9882 100%);
+    color: rgba(0, 0, 0, 0.6);
+}
+
+/* In-Progress: Yellow (ripe, active) */
+.banana.status-in-progress,
+.project-banana.status-in-progress {
+    background: linear-gradient(135deg, #f4d03f 0%, #f1c40f 100%);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+/* On-Hold: Orange (overripe, stalled) */
+.banana.status-on-hold,
+.project-banana.status-on-hold {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Done: Green (picked/completed) */
+.banana.status-done,
+.project-banana.status-done {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* ==========================================================================
+   Banana Tree Responsive Design
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    .tree-branch {
+        width: 250px;
+    }
+
+    .project-banana {
+        width: 150px;
+        height: 45px;
+        font-size: 0.8rem;
+    }
+
+    .task-banana {
+        width: 70px;
+        height: 28px;
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 700px) {
+    .banana-tree {
+        flex-direction: column;
+        align-items: center;
+        padding-top: 60px;
+    }
+
+    .tree-trunk {
+        width: 40px;
+        height: 50px;
+        position: relative;
+        left: auto;
+        transform: none;
+        margin-bottom: 1rem;
+    }
+
+    .tree-branch {
+        position: relative;
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 2rem;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+    }
+
+    .tree-branch.branch-left,
+    .tree-branch.branch-right {
+        align-items: center;
+    }
+
+    .tree-branch.branch-left .branch-svg {
+        transform: none;
+    }
+
+    .tree-branch.branch-left .hanging-tasks {
+        align-items: center;
+    }
+
+    .branch-svg {
+        transform: rotate(90deg);
+    }
+}

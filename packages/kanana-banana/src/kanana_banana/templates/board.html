@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{% if board %}{{ board.name }} | {% endif %}Kanana Banana{% endblock %}
+{% block title %}{% if board %}{{ board.name }} | {% endif %}🍌 Kanana Banana{% endblock %}
 
 {% block content %}
 {% if no_boards %}
@@ -23,6 +23,10 @@
     {% if board.repo_url %}
     <a href="{{ board.repo_url }}" target="_blank" class="repo-link">{{ board.repo_url }}</a>
     {% endif %}
+    <div class="view-toggle">
+        <span class="btn btn-primary">Board View</span>
+        <a href="/boards/{{ board.id }}/tree" class="btn">Tree View</a>
+    </div>
 </div>
 
 {# The kanban columns #}

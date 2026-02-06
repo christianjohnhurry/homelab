@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{% if board %}{{ board.name }} | {% endif %}🍌 Kanana Banana{% endblock %}
+
+{% block content %}
+{% if no_boards %}
+{# Empty state when no boards exist #}
+<div class="empty-state">
+    <h2>Welcome to Kanana Banana!</h2>
+    <p>Create your first board to start organizing your projects, tasks, and subtasks.</p>
+    <button
+        hx-get="/boards/new"
+        hx-target="#modal-content"
+        hx-swap="innerHTML"
+        class="btn btn-primary btn-large">
+        Create Your First Board
+    </button>
+</div>
+{% else %}
+{# Board header with name and view toggle #}
+<div class="board-header">
+    <h2>{{ board.name }}</h2>
+    {% if board.repo_url %}
+    <a href="{{ board.repo_url }}" target="_blank" class="repo-link">{{ board.repo_url }}</a>
+    {% endif %}
+    <div class="view-toggle">
+        <a href="/boards/{{ board.id }}" class="btn">Board View</a>
+        <span class="btn btn-primary">Tree View</span>
+    </div>
+</div>
+
+{# The banana tree visualization #}
+<div class="banana-tree">
+    {# Tree trunk (centered) #}
+    <div class="tree-trunk">
+        <svg class="trunk-svg" viewBox="0 0 60 100" preserveAspectRatio="none">
+            <path class="trunk-path" d="
+                M 15 0
+                Q 20 25 17 50
+                Q 13 75 20 100
+                L 40 100
+                Q 47 75 43 50
+                Q 40 25 45 0
+                Z
+            "/>
+        </svg>
+    </div>
+
+    {# Branches alternating left and right #}
+    {% if projects %}
+        {% for project in projects %}
+        <div class="tree-branch {% if loop.index is odd %}branch-left{% else %}branch-right{% endif %}"
+             id="branch-{{ project.id }}"
+             style="top: {{ loop.index0 * 180 + 40 }}px;">
+            {% include "partials/tree_branch.html" %}
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="empty-tree">
+        <p>No projects yet! Create a ticket with type "Project" to grow your tree.</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

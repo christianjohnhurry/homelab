@@ -1,0 +1,33 @@
+{# A banana bunch representing a task, colored by its status #}
+<div class="banana-bunch" id="bunch-{{ task.id }}">
+    {# Stem connecting bunch to branch #}
+    <svg class="bunch-stem" viewBox="0 0 20 25">
+        <path d="M 10 0 Q 8 12 10 25"/>
+    </svg>
+
+    {# The task as a banana #}
+    <div class="banana task-banana status-{{ task.status.value }}"
+         hx-get="/tickets/{{ task.id }}"
+         hx-target="#modal-content"
+         hx-swap="innerHTML"
+         title="{{ task.name }}{% if task.children %} ({{ task.children | length }} subtasks){% endif %}">
+        <span class="banana-label">{{ task.name | truncate(12) }}</span>
+        {% if task.children %}
+        <span class="subtask-count">{{ task.children | length }}</span>
+        {% endif %}
+    </div>
+
+    {# Status indicator row showing subtask breakdown #}
+    {% if task.children %}
+    <div class="subtask-indicators">
+        {% for status in statuses %}
+            {% set status_count = task.children | selectattr("status", "equalto", status) | list | length %}
+            {% if status_count > 0 %}
+            <span class="subtask-dot status-{{ status.value }}" title="{{ status.value | replace('-', ' ') | title }}: {{ status_count }}">
+                {{ status_count }}
+            </span>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

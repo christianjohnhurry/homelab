@@ -1,0 +1,48 @@
+{# Single branch representing a project as a big banana with tasks hanging below by status #}
+
+{# Branch SVG connecting to trunk #}
+<svg class="branch-svg" viewBox="0 0 100 40">
+    <path class="branch-path" d="M 0 20 Q 50 15 100 20"/>
+</svg>
+
+{# Project as a big horizontal banana #}
+<div class="project-banana status-{{ project.status.value }}"
+     hx-get="/tickets/{{ project.id }}"
+     hx-target="#modal-content"
+     hx-swap="innerHTML"
+     title="{{ project.name }} - {{ project.status.value | replace('-', ' ') | title }}">
+    <span class="banana-label">{{ project.name }}</span>
+</div>
+
+{# Tasks hanging below, grouped by status rows #}
+<div class="hanging-tasks">
+    {% for status in statuses %}
+        {% set tasks_in_status = project.children | selectattr("status", "equalto", status) | list %}
+        {% if tasks_in_status %}
+        <div class="task-row task-row-{{ status.value }}">
+            {% for task in tasks_in_status %}
+            <div class="banana task-banana status-{{ task.status.value }}"
+                 hx-get="/tickets/{{ task.id }}"
+                 hx-target="#modal-content"
+                 hx-swap="innerHTML"
+                 title="{{ task.name }}{% if task.children %} ({{ task.children | length }} subtasks){% endif %}">
+                {# Stem connecting to bunch above #}
+                <svg class="task-stem" viewBox="0 0 20 20">
+                    <path d="M 10 0 Q 8 10 10 20"/>
+                </svg>
+                <span class="banana-label">{{ task.name | truncate(10) }}</span>
+                {% if task.children %}
+                <span class="subtask-count">{{ task.children | length }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endfor %}
+
+    {% if not project.children %}
+    <div class="empty-branch">
+        <span class="empty-branch-text">No tasks</span>
+    </div>
+    {% endif %}
+</div>

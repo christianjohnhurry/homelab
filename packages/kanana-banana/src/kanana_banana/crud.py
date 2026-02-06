@@ -320,3 +320,25 @@ def delete_ticket(session: Session, ticket_id: int) -> bool:
     session.delete(ticket)
     session.commit()
     return True
+
+
+def get_board_tree(session: Session, board_id: int) -> list[Ticket]:
+    """
+    Get all projects for a board with tasks and subtasks eagerly loaded.
+
+    This is used for the banana tree visualization where we need the full
+    hierarchy: Board -> Projects -> Tasks -> Subtasks.
+
+    Returns a list of project tickets with their full hierarchy loaded.
+    """
+    statement = (
+        select(Ticket)
+        .where(Ticket.board_id == board_id)
+        .where(Ticket.ticket_type == TicketType.PROJECT)
+        .options(
+            selectinload(Ticket.children)  # Tasks
+            .selectinload(Ticket.children)  # Subtasks
+        )
+        .order_by(Ticket.name)
+    )
+    return list(session.exec(statement).all())
