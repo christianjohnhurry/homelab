@@ -45,12 +45,15 @@ def create_app() -> FastAPI:
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
     # Import routers here to avoid circular imports
-    from kanana_banana.routers import tickets, board
+    from kanana_banana.routers import tickets, board, boards
 
     # Include API routers
     app.include_router(tickets.router)
 
-    # Include board HTML router
+    # Include board management routes (API + HTML for modals)
+    app.include_router(boards.router)
+
+    # Include main board HTML router (must be last due to catch-all routes)
     app.include_router(board.router)
 
     return app
