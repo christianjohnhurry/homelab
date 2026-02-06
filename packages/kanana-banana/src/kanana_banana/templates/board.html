@@ -1,8 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Board | Kanana Banana{% endblock %}
+{% block title %}{% if board %}{{ board.name }} | {% endif %}Kanana Banana{% endblock %}
 
 {% block content %}
+{% if no_boards %}
+{# Empty state when no boards exist #}
+<div class="empty-state">
+    <h2>Welcome to Kanana Banana!</h2>
+    <p>Create your first board to start organizing your projects, tasks, and subtasks.</p>
+    <button
+        hx-get="/boards/new"
+        hx-target="#modal-content"
+        hx-swap="innerHTML"
+        class="btn btn-primary btn-large">
+        Create Your First Board
+    </button>
+</div>
+{% else %}
+{# Board header with name and optional repo link #}
+<div class="board-header">
+    <h2>{{ board.name }}</h2>
+    {% if board.repo_url %}
+    <a href="{{ board.repo_url }}" target="_blank" class="repo-link">{{ board.repo_url }}</a>
+    {% endif %}
+</div>
+
+{# The kanban columns #}
 <div class="board">
     {% for status in statuses %}
     <div class="column" id="column-{{ status.value }}">
@@ -12,4 +35,5 @@
     </div>
     {% endfor %}
 </div>
+{% endif %}
 {% endblock %}
