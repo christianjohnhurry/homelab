@@ -63,8 +63,8 @@ def export_ticket_markdown(session: Session, ticket_id: int) -> str | None:
                 f"- **Parent:** [{parent.ticket_type.value.upper()}] {parent.name} (#{parent.id})"
             )
 
-    if ticket.repo_url:
-        lines.append(f"- **Repo:** {ticket.repo_url}")
+    if ticket.board and ticket.board.repo_url:
+        lines.append(f"- **Repo:** {ticket.board.repo_url}")
 
     lines.append(f"- **Created:** {ticket.created_at.strftime('%Y-%m-%d')}")
     lines.append(f"- **Updated:** {ticket.updated_at.strftime('%Y-%m-%d')}")
@@ -113,8 +113,8 @@ def export_project_full_markdown(session: Session, project_id: int) -> str | Non
     lines.append("")
 
     # Metadata
-    if project.repo_url:
-        lines.append(f"- **Repo:** {project.repo_url}")
+    if project.board and project.board.repo_url:
+        lines.append(f"- **Repo:** {project.board.repo_url}")
     lines.append(f"- **Status:** {project.status.value}")
     lines.append(f"- **Created:** {project.created_at.strftime('%Y-%m-%d')}")
     lines.append("")
