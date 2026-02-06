@@ -17,12 +17,19 @@ engine = create_engine(
 
 def init_db() -> None:
     """
-    Create all database tables.
+    Create all database tables and run migrations.
 
     Called once at application startup. SQLModel.metadata contains
     all table definitions from classes with table=True.
+
+    After creating tables, we run migrations to handle any existing
+    data that needs to be updated for new features (like boards).
     """
     SQLModel.metadata.create_all(engine)
+
+    # Run migrations for existing data
+    from kanana_banana.migrations.add_boards import migrate
+    migrate()
 
 
 def get_session() -> Generator[Session, None, None]:
