@@ -35,7 +35,7 @@
             {% for target_status in statuses %}
             {% if target_status != ticket.status %}
             <button
-                hx-post="/tickets/{{ ticket.id }}/move?status={{ target_status.value }}"
+                hx-post="/boards/{{ current_board_id }}/tickets/{{ ticket.id }}/move?status={{ target_status.value }}"
                 hx-target="#column-{{ target_status.value }}"
                 hx-swap="innerHTML"
                 class="btn btn-small btn-move">
