@@ -13,6 +13,62 @@ class TicketType(str, enum.Enum):
     SUBTASK = "subtask"
 
 
+# =============================================================================
+# Board Model
+# =============================================================================
+# A Board represents a repository/project namespace. Each board has its own
+# kanban view with its own set of projects (and their tasks/subtasks).
+# =============================================================================
+
+
+class Board(SQLModel, table=True):
+    """
+    A board represents a repository or project namespace.
+
+    Each board contains its own set of projects, which in turn contain
+    tasks and subtasks. This allows you to have separate kanban views
+    for different repos.
+    """
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(max_length=200, index=True)
+    repo_url: Optional[str] = Field(default=None, max_length=500)
+    description: str = Field(default="")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Relationship: a board has many tickets (specifically, projects)
+    # The back_populates="board" links to Ticket.board
+    tickets: list["Ticket"] = Relationship(back_populates="board")
+
+
+class BoardCreate(SQLModel):
+    """Schema for creating a board."""
+
+    name: str = Field(max_length=200)
+    repo_url: Optional[str] = Field(default=None, max_length=500)
+    description: str = Field(default="")
+
+
+class BoardUpdate(SQLModel):
+    """Schema for partial board updates."""
+
+    name: Optional[str] = Field(default=None, max_length=200)
+    repo_url: Optional[str] = Field(default=None, max_length=500)
+    description: Optional[str] = None
+
+
+class BoardRead(SQLModel):
+    """Schema for board API responses."""
+
+    id: int
+    name: str
+    repo_url: Optional[str]
+    description: str
+    created_at: datetime
+    updated_at: datetime
+
+
 class TicketStatus(str, enum.Enum):
     """Status of a ticket on the kanban board."""
 
@@ -34,8 +90,11 @@ class TicketBase(SQLModel):
     ticket_type: TicketType = Field(default=TicketType.TASK)
     status: TicketStatus = Field(default=TicketStatus.TODO, index=True)
     description: str = Field(default="")
-    repo_url: Optional[str] = Field(default=None, max_length=500)
     parent_id: Optional[int] = Field(default=None, foreign_key="ticket.id")
+    # board_id links this ticket to a Board. Projects MUST have a board_id.
+    # Tasks and subtasks inherit it from their parent project.
+    # It's nullable during migration, but we enforce it in CRUD logic.
+    board_id: Optional[int] = Field(default=None, foreign_key="board.id", index=True)
 
 
 class Ticket(TicketBase, table=True):
@@ -60,6 +119,10 @@ class Ticket(TicketBase, table=True):
     )
     children: list["Ticket"] = Relationship(back_populates="parent")
 
+    # Board relationship - links this ticket to a Board
+    # The back_populates="tickets" connects to Board.tickets
+    board: Optional["Board"] = Relationship(back_populates="tickets")
+
 
 class TicketCreate(TicketBase):
     """Schema for creating a ticket. No id or timestamps needed."""
@@ -77,8 +140,8 @@ class TicketUpdate(SQLModel):
     name: Optional[str] = Field(default=None, max_length=200)
     status: Optional[TicketStatus] = None
     description: Optional[str] = None
-    repo_url: Optional[str] = Field(default=None, max_length=500)
     parent_id: Optional[int] = None
+    board_id: Optional[int] = None
 
 
 class TicketRead(TicketBase):
