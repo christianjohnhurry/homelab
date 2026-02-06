@@ -4,7 +4,7 @@
     <h2>{% if ticket %}Edit Ticket{% else %}New Ticket{% endif %}</h2>
 
     <form
-        hx-post="{% if ticket %}/tickets/{{ ticket.id }}/edit{% else %}/tickets{% endif %}"
+        hx-post="{% if ticket %}/tickets/{{ ticket.id }}/edit{% else %}/boards/{{ current_board_id }}/tickets{% endif %}"
         hx-target="body"
         hx-swap="none"
         hx-on::after-request="if(event.detail.successful) { location.reload(); }">
@@ -63,16 +63,6 @@
                 {% endfor %}
             </select>
             <small>Projects have no parent. Tasks need a project parent. Subtasks need a task parent.</small>
-        </div>
-
-        <div class="form-group">
-            <label for="repo_url">Repository URL (for projects)</label>
-            <input
-                type="url"
-                id="repo_url"
-                name="repo_url"
-                value="{{ ticket.repo_url if ticket and ticket.repo_url else '' }}"
-                placeholder="https://github.com/...">
         </div>
 
         <div class="form-group">
