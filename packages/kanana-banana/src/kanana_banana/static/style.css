@@ -884,7 +884,7 @@ main {
     transform: translateX(-50%);
     top: 0;
     width: 400px;
-    height: 200px;
+    height: 120px;
     z-index: 2;
     pointer-events: none;
 }

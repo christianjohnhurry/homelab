@@ -33,24 +33,24 @@
 <div class="banana-tree">
     {# Palm leaves at the top of the tree #}
     <div class="palm-crown">
-        <svg class="palm-leaves" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
-            {# Left leaves #}
-            <path class="palm-leaf" d="M 200 180 Q 150 150 100 100 Q 80 80 60 60 Q 40 40 20 20" />
-            <path class="palm-leaf" d="M 200 180 Q 140 160 90 120 Q 70 100 50 80 Q 30 60 10 40" />
-            <path class="palm-leaf" d="M 200 180 Q 160 140 120 80 Q 100 60 80 40 Q 60 20 40 0" />
+        <svg class="palm-leaves" viewBox="0 0 400 120" preserveAspectRatio="xMidYMid meet">
+            {# Left leaves - more horizontal angle #}
+            <path class="palm-leaf" d="M 200 110 Q 140 100 80 80 Q 50 70 20 60" />
+            <path class="palm-leaf" d="M 200 110 Q 130 95 70 70 Q 40 55 10 40" />
+            <path class="palm-leaf" d="M 200 110 Q 150 85 100 50 Q 70 30 40 10" />
 
             {# Center-left leaves #}
-            <path class="palm-leaf" d="M 200 180 Q 180 120 160 60 Q 150 30 140 0" />
-            <path class="palm-leaf" d="M 200 180 Q 190 130 180 80 Q 175 50 170 20" />
+            <path class="palm-leaf" d="M 200 110 Q 180 70 160 30 Q 150 15 140 0" />
+            <path class="palm-leaf" d="M 200 110 Q 190 80 180 50 Q 175 30 170 10" />
 
-            {# Right leaves #}
-            <path class="palm-leaf" d="M 200 180 Q 250 150 300 100 Q 320 80 340 60 Q 360 40 380 20" />
-            <path class="palm-leaf" d="M 200 180 Q 260 160 310 120 Q 330 100 350 80 Q 370 60 390 40" />
-            <path class="palm-leaf" d="M 200 180 Q 240 140 280 80 Q 300 60 320 40 Q 340 20 360 0" />
+            {# Right leaves - more horizontal angle #}
+            <path class="palm-leaf" d="M 200 110 Q 260 100 320 80 Q 350 70 380 60" />
+            <path class="palm-leaf" d="M 200 110 Q 270 95 330 70 Q 360 55 390 40" />
+            <path class="palm-leaf" d="M 200 110 Q 250 85 300 50 Q 330 30 360 10" />
 
             {# Center-right leaves #}
-            <path class="palm-leaf" d="M 200 180 Q 220 120 240 60 Q 250 30 260 0" />
-            <path class="palm-leaf" d="M 200 180 Q 210 130 220 80 Q 225 50 230 20" />
+            <path class="palm-leaf" d="M 200 110 Q 220 70 240 30 Q 250 15 260 0" />
+            <path class="palm-leaf" d="M 200 110 Q 210 80 220 50 Q 225 30 230 10" />
         </svg>
     </div>
 
@@ -74,7 +74,7 @@
         {% for project in projects %}
         <div class="tree-branch {% if loop.index is odd %}branch-left{% else %}branch-right{% endif %}"
              id="branch-{{ project.id }}"
-             style="top: {{ loop.index0 * 140 + 220 }}px;">
+             style="top: {{ loop.index0 * 110 + 140 }}px;">
             {% include "partials/tree_branch.html" %}
         </div>
         {% endfor %}
