@@ -26,7 +26,8 @@
                 {% for t in ticket_types %}
                 <option
                     value="{{ t.value }}"
-                    {% if ticket and ticket.ticket_type == t %}selected{% endif %}>
+                    {% if ticket and ticket.ticket_type == t %}selected{% endif %}
+                    {% if not ticket and prefill_ticket_type and prefill_ticket_type == t.value %}selected{% endif %}>
                     {{ t.value | title }}
                 </option>
                 {% endfor %}
@@ -57,7 +58,8 @@
                 {% for p in possible_parents %}
                 <option
                     value="{{ p.id }}"
-                    {% if ticket and ticket.parent_id == p.id %}selected{% endif %}>
+                    {% if ticket and ticket.parent_id == p.id %}selected{% endif %}
+                    {% if not ticket and prefill_parent_id and prefill_parent_id == p.id %}selected{% endif %}>
                     [{{ p.ticket_type.value | upper }}] {{ p.name }}
                 </option>
                 {% endfor %}
