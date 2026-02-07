@@ -156,6 +156,8 @@ def get_column(
 def new_ticket_form(
     request: Request,
     board_id: int,
+    parent_id: Optional[int] = None,
+    ticket_type: Optional[str] = None,
     session: Session = Depends(get_session),
 ):
     """Render the create ticket form for a specific board (HTMX partial)."""
@@ -175,6 +177,8 @@ def new_ticket_form(
     context["possible_parents"] = projects + tasks
     context["current_board_id"] = board_id
     context["board"] = board
+    context["prefill_parent_id"] = parent_id
+    context["prefill_ticket_type"] = ticket_type
 
     return templates.TemplateResponse("partials/ticket_form.html", context)
 
@@ -224,7 +228,7 @@ def get_ticket_detail(
     ticket_id: int,
     session: Session = Depends(get_session),
 ):
-    """Render ticket detail view (HTMX partial)."""
+    """Render ticket detail view (HTMX partial). Template varies by ticket type."""
     ticket = crud.get_ticket(session, ticket_id)
     if ticket is None:
         raise HTTPException(
@@ -236,7 +240,15 @@ def get_ticket_detail(
     context["ticket"] = ticket
     context["current_board_id"] = ticket.board_id
 
-    return templates.TemplateResponse("partials/ticket_detail.html", context)
+    # Choose template based on ticket type
+    if ticket.ticket_type == TicketType.PROJECT:
+        template = "partials/project_detail.html"
+    elif ticket.ticket_type == TicketType.TASK:
+        template = "partials/task_detail.html"
+    else:  # SUBTASK
+        template = "partials/ticket_detail.html"
+
+    return templates.TemplateResponse(template, context)
 
 
 @router.get("/tickets/{ticket_id}/edit", response_class=HTMLResponse)
