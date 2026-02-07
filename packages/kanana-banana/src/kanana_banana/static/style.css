@@ -7,15 +7,17 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: #f5f5f5;
-    color: #333;
+    background: linear-gradient(135deg, #e8f5e3 0%, #f0f8ec 50%, #e3f0db 100%);
+    background-attachment: fixed;
+    color: #2d4520;
     line-height: 1.5;
 }
 
 /* Header */
 header {
-    background: #2c3e50;
-    color: white;
+    background: linear-gradient(135deg, #2d5016 0%, #3d6b1f 50%, #4a7c2a 100%);
+    box-shadow: 0 2px 8px rgba(45, 80, 22, 0.3);
+    color: #f0f8ec;
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
@@ -124,10 +126,12 @@ main {
 
 /* Columns */
 .column {
-    background: #ecf0f1;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid #d4e6c8;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 2px 8px rgba(45, 80, 22, 0.1);
 }
 
 .column-header {
@@ -152,25 +156,25 @@ main {
     font-size: 0.8rem;
 }
 
-/* Column header colors by status */
+/* Column header colors by status - jungle themed */
 .column-header-to-do {
-    background: #95a5a6;
-    color: white;
+    background: linear-gradient(135deg, #8a9882 0%, #7a8872 100%);
+    color: #f0f8ec;
 }
 
 .column-header-in-progress {
-    background: #3498db;
-    color: white;
+    background: linear-gradient(135deg, #f4d03f 0%, #e6c02f 100%);
+    color: #2d4520;
 }
 
 .column-header-on-hold {
-    background: #f39c12;
-    color: white;
+    background: linear-gradient(135deg, #d97523 0%, #c86515 100%);
+    color: #f0f8ec;
 }
 
 .column-header-done {
-    background: #27ae60;
-    color: white;
+    background: linear-gradient(135deg, #4a7c2a 0%, #3d6b1f 100%);
+    color: #f0f8ec;
 }
 
 .column-body {
@@ -190,23 +194,26 @@ main {
 
 /* Ticket cards */
 .ticket-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 6px;
     padding: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-left: 4px solid #95a5a6;
+    box-shadow: 0 2px 4px rgba(45, 80, 22, 0.15);
+    border-left: 4px solid #8a9882;
 }
 
 .ticket-type-project {
-    border-left-color: #9b59b6;
+    border-left-color: #8B4513;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 235, 220, 0.95) 100%);
 }
 
 .ticket-type-task {
-    border-left-color: #3498db;
+    border-left-color: #4a7c2a;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(232, 245, 227, 0.95) 100%);
 }
 
 .ticket-type-subtask {
-    border-left-color: #1abc9c;
+    border-left-color: #5a8f35;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(227, 240, 219, 0.95) 100%);
 }
 
 .ticket-header {
@@ -230,18 +237,18 @@ main {
 }
 
 .badge-project {
-    background: #9b59b6;
-    color: white;
+    background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+    color: #f0f8ec;
 }
 
 .badge-task {
-    background: #3498db;
-    color: white;
+    background: linear-gradient(135deg, #4a7c2a 0%, #3d6b1f 100%);
+    color: #f0f8ec;
 }
 
 .badge-subtask {
-    background: #1abc9c;
-    color: white;
+    background: linear-gradient(135deg, #5a8f35 0%, #4a7c2a 100%);
+    color: #f0f8ec;
 }
 
 .badge-small {
@@ -298,14 +305,15 @@ main {
 
 .modal-content {
     position: relative;
-    background: white;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fdf5 100%);
+    border: 2px solid #d4e6c8;
     border-radius: 8px;
     padding: 1.5rem;
     max-width: 500px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 20px rgba(45, 80, 22, 0.3);
 }
 
 .modal.modal-wide .modal-content {
@@ -661,8 +669,9 @@ main {
 /* Sidebar */
 .sidebar {
     width: 250px;
-    background: #34495e;
-    color: white;
+    background: linear-gradient(180deg, #2d5016 0%, #3d6b1f 100%);
+    box-shadow: 2px 0 8px rgba(45, 80, 22, 0.2);
+    color: #f0f8ec;
     padding: 1rem;
     flex-shrink: 0;
 }
@@ -673,8 +682,8 @@ main {
     letter-spacing: 0.05em;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.7);
+    border-bottom: 1px solid rgba(240, 248, 236, 0.2);
+    color: #d4e6c8;
 }
 
 .board-list {
@@ -692,15 +701,16 @@ main {
 }
 
 .board-item:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(74, 124, 42, 0.4);
 }
 
 .board-item.active {
-    background: #3498db;
+    background: linear-gradient(135deg, #5a8f35 0%, #4a7c2a 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .board-item a {
-    color: white;
+    color: #f0f8ec;
     text-decoration: none;
     flex: 1;
     overflow: hidden;
