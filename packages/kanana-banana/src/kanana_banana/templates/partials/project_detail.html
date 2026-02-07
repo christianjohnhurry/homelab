@@ -1,0 +1,121 @@
+{# Project detail view with left status column and right content #}
+
+<div class="ticket-detail project-detail-modal">
+    <div class="ticket-detail-header">
+        <span class="ticket-type-badge badge-{{ ticket.ticket_type.value }}">
+            {{ ticket.ticket_type.value | upper }}
+        </span>
+        <h2>{{ ticket.name }}</h2>
+    </div>
+
+    <div class="project-detail-container">
+        {# Left column: Status labels #}
+        <div class="status-column">
+            {% for status in statuses %}
+            {% set count = ticket.children | selectattr("status", "equalto", status) | list | length %}
+            <div class="status-label-item">
+                <div class="status-label-dot status-{{ status.value }}"></div>
+                <div class="status-label-title">{{ status.value | replace("-", " ") | title }}</div>
+                <div class="status-label-count">{{ count }} task{{ 's' if count != 1 else '' }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# Right side: Project info and visual #}
+        <div class="project-main">
+            <div class="ticket-meta">
+                <div class="meta-row">
+                    <strong>Status:</strong>
+                    <select
+                        class="status-dropdown"
+                        hx-post="/boards/{{ ticket.board_id }}/tickets/{{ ticket.id }}/move"
+                        hx-trigger="change"
+                        hx-target="body"
+                        hx-swap="none"
+                        hx-on::after-request="if(event.detail.successful) { location.reload(); }"
+                        name="status">
+                        {% for s in statuses %}
+                        <option value="{{ s.value }}" {% if ticket.status == s %}selected{% endif %}>
+                            {{ s.value | replace("-", " ") | title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <p><strong>Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Updated:</strong> {{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+
+            {% if ticket.description %}
+            <div class="ticket-description-box">
+                <h3>Description</h3>
+                <div class="description-content">{{ ticket.description }}</div>
+            </div>
+            {% else %}
+            <div class="ticket-description-box empty">
+                <p class="empty-description">No description</p>
+            </div>
+            {% endif %}
+
+            {# Single branch with hanging tasks #}
+            <div class="project-visual">
+                <h3>Tasks ({{ ticket.children | length }})</h3>
+                <div class="detail-branch">
+                    <div class="project-banana status-{{ ticket.status.value }}">
+                        <span class="banana-label">{{ ticket.name | truncate(15) }}</span>
+                    </div>
+
+                    <div class="hanging-tasks">
+                        {% for task in ticket.children %}
+                        <div class="banana task-banana status-{{ task.status.value }}"
+                             hx-get="/tickets/{{ task.id }}"
+                             hx-target="#modal-content"
+                             hx-swap="innerHTML"
+                             title="{{ task.name }}{% if task.children %} ({{ task.children | length }} subtasks){% endif %}">
+                            <svg class="task-stem" viewBox="0 0 20 20">
+                                <path d="M 10 0 Q 8 8 10 15" stroke="currentColor" fill="none" stroke-width="2"/>
+                            </svg>
+                            <span class="banana-label">{{ task.name | truncate(10) }}</span>
+                            {% if task.children %}
+                            <span class="subtask-count">{{ task.children | length }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        {% if not ticket.children %}
+                        <div class="empty-branch">
+                            <span class="empty-branch-text">No tasks yet</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ticket-detail-actions">
+        <button
+            hx-get="/boards/{{ ticket.board_id }}/tickets/new?parent_id={{ ticket.id }}&ticket_type=task"
+            hx-target="#modal-content"
+            hx-swap="innerHTML"
+            class="btn btn-success">
+            + Add Task
+        </button>
+        <button
+            hx-get="/tickets/{{ ticket.id }}/edit"
+            hx-target="#modal-content"
+            hx-swap="innerHTML"
+            class="btn btn-primary">
+            Edit
+        </button>
+        <button
+            hx-post="/tickets/{{ ticket.id }}/delete"
+            hx-target="body"
+            hx-swap="none"
+            hx-confirm="Are you sure you want to delete this project? This will also delete all tasks and subtasks."
+            hx-on::after-request="if(event.detail.successful) { location.reload(); }"
+            class="btn btn-danger">
+            Delete
+        </button>
+        <button type="button" class="btn" onclick="closeModal()">Close</button>
+    </div>
+</div>
