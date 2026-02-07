@@ -1,0 +1,119 @@
+{# Task detail view with subtask table #}
+
+<div class="ticket-detail task-detail-modal">
+    <div class="ticket-detail-header">
+        <span class="ticket-type-badge badge-{{ ticket.ticket_type.value }}">
+            {{ ticket.ticket_type.value | upper }}
+        </span>
+        <h2>{{ ticket.name }}</h2>
+    </div>
+
+    <div class="ticket-meta">
+        <div class="meta-row">
+            <strong>Status:</strong>
+            <select
+                class="status-dropdown"
+                hx-post="/boards/{{ ticket.board_id }}/tickets/{{ ticket.id }}/move"
+                hx-trigger="change"
+                hx-target="body"
+                hx-swap="none"
+                hx-on::after-request="if(event.detail.successful) { location.reload(); }"
+                name="status">
+                {% for s in statuses %}
+                <option value="{{ s.value }}" {% if ticket.status == s %}selected{% endif %}>
+                    {{ s.value | replace("-", " ") | title }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <p><strong>Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>Updated:</strong> {{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        {% if ticket.parent %}
+        <p><strong>Project:</strong>
+            <span class="ticket-type-badge badge-{{ ticket.parent.ticket_type.value }} badge-small">
+                {{ ticket.parent.ticket_type.value | upper }}
+            </span>
+            {{ ticket.parent.name }}
+        </p>
+        {% endif %}
+    </div>
+
+    {% if ticket.description %}
+    <div class="ticket-description-box">
+        <h3>Description</h3>
+        <div class="description-content">{{ ticket.description }}</div>
+    </div>
+    {% else %}
+    <div class="ticket-description-box empty">
+        <p class="empty-description">No description</p>
+    </div>
+    {% endif %}
+
+    {# Subtasks table #}
+    {% if ticket.children %}
+    <div class="subtasks-section">
+        <h3>Subtasks ({{ ticket.children | length }})</h3>
+        <table class="subtasks-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th class="subtask-status-cell">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subtask in ticket.children %}
+                <tr hx-get="/tickets/{{ subtask.id }}"
+                    hx-target="#modal-content"
+                    hx-swap="innerHTML"
+                    title="Click to view details">
+                    <td class="subtask-name-cell">
+                        <span class="ticket-type-badge badge-{{ subtask.ticket_type.value }} badge-small">
+                            {{ subtask.ticket_type.value | upper }}
+                        </span>
+                        {{ subtask.name }}
+                    </td>
+                    <td>{{ subtask.description | truncate(60) }}</td>
+                    <td class="subtask-status-cell">
+                        <span class="status-pill status-{{ subtask.status.value }}">
+                            {{ subtask.status.value | replace("-", " ") }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-subtasks">
+        <p>No subtasks yet</p>
+    </div>
+    {% endif %}
+
+    <div class="ticket-detail-actions">
+        <button
+            hx-get="/boards/{{ ticket.board_id }}/tickets/new?parent_id={{ ticket.id }}&ticket_type=subtask"
+            hx-target="#modal-content"
+            hx-swap="innerHTML"
+            class="btn btn-success">
+            + Add Subtask
+        </button>
+        <button
+            hx-get="/tickets/{{ ticket.id }}/edit"
+            hx-target="#modal-content"
+            hx-swap="innerHTML"
+            class="btn btn-primary">
+            Edit
+        </button>
+        <button
+            hx-post="/tickets/{{ ticket.id }}/delete"
+            hx-target="body"
+            hx-swap="none"
+            hx-confirm="Are you sure you want to delete this task? This will also delete all subtasks."
+            hx-on::after-request="if(event.detail.successful) { location.reload(); }"
+            class="btn btn-danger">
+            Delete
+        </button>
+        <button type="button" class="btn" onclick="closeModal()">Close</button>
+    </div>
+</div>
