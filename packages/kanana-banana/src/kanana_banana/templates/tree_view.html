@@ -74,7 +74,7 @@
         {% for project in projects %}
         <div class="tree-branch {% if loop.index is odd %}branch-left{% else %}branch-right{% endif %}"
              id="branch-{{ project.id }}"
-             style="top: {{ loop.index0 * 180 + 40 }}px;">
+             style="top: {{ loop.index0 * 140 + 220 }}px;">
             {% include "partials/tree_branch.html" %}
         </div>
         {% endfor %}
