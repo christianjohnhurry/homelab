@@ -5,14 +5,18 @@
     <path class="branch-path" d="M 0 20 Q 50 15 100 20"/>
 </svg>
 
-{# Project as a big horizontal banana #}
-<div class="project-banana status-{{ project.status.value }}"
+{# Project as a big banana (SVG shape) #}
+<svg class="project-banana status-{{ project.status.value }}"
+     viewBox="0 0 120 50"
      hx-get="/tickets/{{ project.id }}"
      hx-target="#modal-content"
      hx-swap="innerHTML"
      title="{{ project.name }} - {{ project.status.value | replace('-', ' ') | title }}">
-    <span class="banana-label">{{ project.name }}</span>
-</div>
+    <use href="#banana-shape" width="120" height="50"/>
+    <text class="banana-label-text" x="58" y="14" text-anchor="middle" dominant-baseline="middle">
+        {{ project.name | truncate(15) }}
+    </text>
+</svg>
 
 {# Tasks hanging below, grouped by status rows #}
 <div class="hanging-tasks">
@@ -21,16 +25,21 @@
         {% if tasks_in_status %}
         <div class="task-row task-row-{{ status.value }}">
             {% for task in tasks_in_status %}
-            <div class="banana task-banana status-{{ task.status.value }}"
-                 hx-get="/tickets/{{ task.id }}"
-                 hx-target="#modal-content"
-                 hx-swap="innerHTML"
-                 title="{{ task.name }}{% if task.children %} ({{ task.children | length }} subtasks){% endif %}">
-                {# Stem connecting to bunch above #}
+            <div class="task-banana-wrapper">
                 <svg class="task-stem" viewBox="0 0 20 20">
                     <path d="M 10 0 Q 8 10 10 20"/>
                 </svg>
-                <span class="banana-label">{{ task.name | truncate(10) }}</span>
+                <svg class="banana task-banana status-{{ task.status.value }}"
+                     viewBox="0 0 120 50"
+                     hx-get="/tickets/{{ task.id }}"
+                     hx-target="#modal-content"
+                     hx-swap="innerHTML"
+                     title="{{ task.name }}{% if task.children %} ({{ task.children | length }} subtasks){% endif %}">
+                    <use href="#banana-shape" width="120" height="50"/>
+                    <text class="banana-label-text" x="58" y="14" text-anchor="middle" dominant-baseline="middle">
+                        {{ task.name | truncate(10) }}
+                    </text>
+                </svg>
                 {% if task.children %}
                 <span class="subtask-count">{{ task.children | length }}</span>
                 {% endif %}

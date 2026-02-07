@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}🍌 Kanana Banana{% endblock %}</title>
 
+    <!-- Fonts: Nunito (headings) + Inter (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+
     <!-- HTMX: Enables AJAX requests via HTML attributes -->
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
@@ -42,7 +47,7 @@
             <ul class="board-list">
                 {% for b in boards %}
                 <li class="board-item {% if current_board_id == b.id %}active{% endif %}">
-                    <a href="/boards/{{ b.id }}">{{ b.name }}</a>
+                    <a href="/boards/{{ b.id }}/tree">{{ b.name }}</a>
                     <button
                         hx-get="/boards/{{ b.id }}/edit"
                         hx-target="#modal-content"
@@ -70,6 +75,22 @@
         <div class="modal-backdrop" onclick="closeModal()"></div>
         <div id="modal-content" class="modal-content"></div>
     </div>
+
+    {# Reusable SVG symbols — defined once, used via <use href="#..."/> #}
+    <svg style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="banana-shape" viewBox="0 0 120 50">
+            <path class="banana-fill" d="
+                M 10 38
+                C 4 30, 6 16, 18 10
+                C 32 3, 58 0, 88 5
+                C 102 8, 114 15, 112 22
+                C 110 28, 100 24, 85 20
+                C 62 14, 38 18, 22 30
+                C 16 34, 14 40, 10 38
+                Z
+            "/>
+        </symbol>
+    </svg>
 
     <script>
         // Modal management

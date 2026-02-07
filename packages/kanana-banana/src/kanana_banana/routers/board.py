@@ -54,7 +54,7 @@ def index(
     boards = crud.list_boards(session)
     if boards:
         # Redirect to the first board
-        return RedirectResponse(url=f"/boards/{boards[0].id}", status_code=302)
+        return RedirectResponse(url=f"/boards/{boards[0].id}/tree", status_code=302)
 
     # No boards - show empty state
     context = get_context(request, session)
