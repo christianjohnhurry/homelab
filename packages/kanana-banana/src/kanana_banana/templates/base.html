@@ -76,7 +76,18 @@
         // HTMX triggers 'htmx:afterSwap' when content is loaded
         document.body.addEventListener('htmx:afterSwap', function(event) {
             if (event.detail.target.id === 'modal-content') {
-                document.getElementById('modal').style.display = 'flex';
+                const modal = document.getElementById('modal');
+                const content = event.detail.target;
+
+                // Adjust modal width based on content
+                modal.classList.remove('modal-wide', 'modal-medium');
+                if (content.querySelector('.project-detail-modal')) {
+                    modal.classList.add('modal-wide');
+                } else if (content.querySelector('.task-detail-modal')) {
+                    modal.classList.add('modal-medium');
+                }
+
+                modal.style.display = 'flex';
             }
         });
 
@@ -87,8 +98,9 @@
 
         // Close modal on successful form submission
         document.body.addEventListener('htmx:afterRequest', function(event) {
-            // If the request came from a form in the modal and succeeded
+            // If the request came from a FORM in the modal and succeeded
             if (event.detail.successful &&
+                event.detail.elt.tagName === 'FORM' &&
                 event.detail.elt.closest('#modal-content')) {
                 closeModal();
             }
