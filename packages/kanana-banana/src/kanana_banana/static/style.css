@@ -75,6 +75,15 @@ header a:hover {
     background: #c0392b;
 }
 
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #229954;
+}
+
 .btn-small {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
@@ -299,6 +308,157 @@ main {
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
+.modal.modal-wide .modal-content {
+    max-width: 800px;
+}
+
+.modal.modal-medium .modal-content {
+    max-width: 700px;
+}
+
+/* Project detail modal with left column layout */
+.project-detail-modal {
+    max-width: 800px;
+    width: 95%;
+}
+
+.project-detail-container {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Left column: status labels */
+.status-column {
+    flex: 0 0 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-label-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-label-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: capitalize;
+}
+
+.status-label-count {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+.status-label-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-bottom: 0.25rem;
+}
+
+.status-label-dot.status-to-do {
+    background: linear-gradient(135deg, #a8b5a0 0%, #8a9882 100%);
+}
+
+.status-label-dot.status-in-progress {
+    background: linear-gradient(135deg, #f4d03f 0%, #f1c40f 100%);
+}
+
+.status-label-dot.status-on-hold {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+}
+
+.status-label-dot.status-done {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+}
+
+/* Right side: project info and visual */
+.project-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.project-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.detail-branch {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.detail-branch .project-banana {
+    margin-bottom: 1rem;
+}
+
+.detail-branch .hanging-tasks {
+    position: relative;
+    min-height: 100px;
+}
+
+/* Task detail modal */
+.task-detail-modal {
+    max-width: 700px;
+}
+
+.subtasks-table {
+    width: 100%;
+    margin-top: 1.5rem;
+    border-collapse: collapse;
+}
+
+.subtasks-table th {
+    background: #ecf0f1;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+.subtasks-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.subtasks-table tr:hover {
+    background: #f8f9fa;
+    cursor: pointer;
+}
+
+.subtask-name-cell {
+    font-weight: 500;
+}
+
+.subtask-status-cell {
+    text-align: center;
+}
+
+.empty-subtasks {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 2rem;
+    font-style: italic;
+}
+
+.badge-small {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+}
+
 /* Forms */
 .form-container h2 {
     margin-bottom: 1rem;
@@ -363,6 +523,66 @@ main {
 
 .ticket-meta p {
     margin-bottom: 0.25rem;
+}
+
+.meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-dropdown {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.status-dropdown:hover {
+    border-color: #3498db;
+}
+
+.status-dropdown:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.ticket-description-box {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.ticket-description-box h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ticket-description-box .description-content {
+    color: #333;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.ticket-description-box.empty {
+    background: #fafafa;
+    border-style: dashed;
+}
+
+.empty-description {
+    color: #999;
+    font-style: italic;
+    margin: 0;
 }
 
 .ticket-description-full {
@@ -623,6 +843,15 @@ main {
     padding: 2rem 1rem;
     display: flex;
     justify-content: center;
+    /* Jungle background */
+    background: linear-gradient(180deg,
+        #2d5016 0%,     /* Dark jungle green at top */
+        #3d6b1f 20%,    /* Medium jungle green */
+        #4a7c2a 40%,    /* Lighter green */
+        #5a8f35 60%,    /* Even lighter */
+        #6da03f 100%    /* Bright green at bottom */
+    );
+    background-attachment: fixed;
 }
 
 /* Tree Trunk - Centered */
@@ -646,6 +875,41 @@ main {
     fill: #8B4513;
     stroke: #654321;
     stroke-width: 1;
+}
+
+/* Palm Crown - Green leaves at top of tree */
+.palm-crown {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    width: 400px;
+    height: 200px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.palm-leaves {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.palm-leaf {
+    fill: none;
+    stroke: #2d7a1f;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.9;
+}
+
+.palm-leaf:nth-child(odd) {
+    stroke: #3d8a2f;
+}
+
+.palm-leaf:nth-child(3n) {
+    stroke: #4d9a3f;
 }
 
 /* Empty state for tree */
@@ -794,16 +1058,35 @@ main {
     width: 85px;
     height: 34px;
     font-size: 0.7rem;
+    transform-origin: top left;
+}
+
+/* Create variety in hanging angles */
+.task-banana:nth-child(3n+1) {
+    transform: rotate(-18deg);
+}
+
+.task-banana:nth-child(3n+2) {
+    transform: rotate(-22deg);
+}
+
+.task-banana:nth-child(3n+3) {
+    transform: rotate(-20deg);
+}
+
+.task-banana:hover {
+    transform: rotate(-20deg) scale(1.15);
+    z-index: 10;
 }
 
 /* Task stem connecting banana to row above */
 .task-stem {
     position: absolute;
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: -15px;
+    left: 8px;
+    transform: none;
     width: 16px;
-    height: 18px;
+    height: 15px;
 }
 
 .task-stem path {
