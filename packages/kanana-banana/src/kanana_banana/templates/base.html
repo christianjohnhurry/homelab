@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}🍌 Kanana Banana{% endblock %}</title>
 
-    <!-- Fonts: Nunito (headings) + Inter (body) -->
+    <!-- Font: Lora -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
     <!-- HTMX: Enables AJAX requests via HTML attributes -->
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
@@ -17,7 +17,9 @@
 </head>
 <body>
     <header>
-        <h1>🍌 Kanana Banana</h1>
+        <a href="/" class="header-logo">
+            <img src="/assets/kanana.png" alt="Kanana Banana" class="header-logo-img">
+        </a>
         <nav>
             {# Only show New Ticket button if we're on a board #}
             {% if current_board_id %}

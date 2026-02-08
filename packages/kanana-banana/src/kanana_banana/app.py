@@ -12,6 +12,7 @@ from kanana_banana.database import init_db
 # Resolve paths relative to this file
 PACKAGE_DIR = Path(__file__).parent
 STATIC_DIR = PACKAGE_DIR / "static"
+ASSETS_DIR = PACKAGE_DIR / "assets"
 
 
 @asynccontextmanager
@@ -43,6 +44,7 @@ def create_app() -> FastAPI:
 
     # Mount static files (CSS, JS, images)
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
 
     # Import routers here to avoid circular imports
     from kanana_banana.routers import tickets, board, boards
