@@ -1,6 +1,29 @@
-# 🍌 Kanana Banana
+<p align="center">
+  <img src="src/kanana_banana/assets/kanana.png" alt="Kanana Banana" width="300">
+</p>
+
+# Kanana Banana
 
 A simple local kanban board for tracking projects, tasks, and subtasks.
+
+Kanana Banana is a kanban board for hobby-code projects. Software engineers are used to using kanban boards for project management, and for communicating to teammates where changes to the codebase are being made and their status of progression with those changes. 
+
+Kanban boards are often associated with SCRUM like product management frameworks, in which tickets are usually defined by what is delivered and the time it is expected to take to complete that delivery. These are tried and tested methods for delivering high quality software at pace.
+
+However, after you've cooked dinner, finished eating, and cleaned the dishes, the last thing you might want to do is assign yourself a time-sensitive task. 
+
+Some software, we develop for our own enjoyment, our own education, and simply for fun. That doesn't mean the code beneath a hobby project isn't complex, and so we still may need to manage and plan out our ideas into well defined itemised actions. 
+
+Hence, Kanana Banana. A kanban board with the hobbyist at heart. 
+
+The philosophy of a Kanana Banana project is:
+
+- Every repository of code has its own kanana banana board
+- Every big feature is assigned a PROJECT ticket 
+- Every task needed to complete that PROJECT is assigned a TASK ticket
+- Code reviews should be performed for every TASK
+- If a TASK needs to be split into multiple pull requests to keep review manageable, it should be split into SUBTASK tickets
+- Miscellaneous tasks, such as fixes, should be assigned a TASK ticket with no parent PROJECT
 
 ## Features
 
