@@ -101,5 +101,9 @@ The image is tagged with the dev-spaces version (`dev-spaces-base:<version>`), s
 
 ## Development
 
+```bash
+pixi run test-dev-spaces              # unit tests (Docker and git are faked)
+```
+
 See [PLAN.md](PLAN.md) for the design and roadmap, and [CHANGELOG.md](CHANGELOG.md) for
 changes. Versioning follows semver. Releases are tagged `dev-spaces-vX.Y.Z`.
