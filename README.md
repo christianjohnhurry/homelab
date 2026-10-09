@@ -6,14 +6,14 @@ A repository of utilities to make setting up personal coding projects easier.
 
 ### 🍌 Kanana Banana 🍌 
 
-A local kanban board for tracking projects, tasks, and subtasks.
+A local kanban board for tracking projects, tasks, and subtasks, with a `kb` CLI that
+creates a GitHub branch for each ticket.
 
 ```bash
 cd ~/code/homelab
-pixi run kanana-banana
+pixi run kanana-banana        # server: http://127.0.0.1:8000/
+pixi run kb list --tree       # in another terminal
 ```
-
-Then open http://127.0.0.1:8000/
 
 See [packages/kanana-banana/README.md](packages/kanana-banana/README.md) for details.
 
