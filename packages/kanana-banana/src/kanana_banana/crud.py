@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Session, select
@@ -13,6 +12,7 @@ from kanana_banana.models import (
     TicketUpdate,
     TicketType,
     TicketStatus,
+    utc_now,
 )
 
 
@@ -71,7 +71,7 @@ def update_board(
     for key, value in update_data.items():
         setattr(board, key, value)
 
-    board.updated_at = datetime.utcnow()
+    board.updated_at = utc_now()
     session.add(board)
     session.commit()
     session.refresh(board)
@@ -276,7 +276,7 @@ def update_ticket(
     for key, value in update_data.items():
         setattr(ticket, key, value)
 
-    ticket.updated_at = datetime.utcnow()
+    ticket.updated_at = utc_now()
     session.add(ticket)
     session.commit()
     session.refresh(ticket)
@@ -300,7 +300,7 @@ def update_ticket_status(
         return None
 
     ticket.status = new_status
-    ticket.updated_at = datetime.utcnow()
+    ticket.updated_at = utc_now()
     session.add(ticket)
     session.commit()
     session.refresh(ticket)

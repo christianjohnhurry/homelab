@@ -8,5 +8,8 @@ Versions before 0.2.0 predate this changelog.
 
 ## [Unreleased]
 
+### Fixed
+- Creating or updating boards and tickets failed with "Datetime values must have timezone information" after the SQLModel upgrade. Timestamps are now timezone-aware UTC.
+
 ### Added
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.

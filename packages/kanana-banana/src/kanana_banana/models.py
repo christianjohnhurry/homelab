@@ -1,8 +1,13 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlmodel import SQLModel, Field, Relationship
+
+
+def utc_now() -> datetime:
+    """Current time in UTC, timezone-aware (SQLModel rejects naive datetimes)."""
+    return datetime.now(timezone.utc)
 
 
 class TicketType(str, enum.Enum):
@@ -34,8 +39,8 @@ class Board(SQLModel, table=True):
     name: str = Field(max_length=200, index=True)
     repo_url: Optional[str] = Field(default=None, max_length=500)
     description: str = Field(default="")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
 
     # Relationship: a board has many tickets (specifically, projects)
     # The back_populates="board" links to Ticket.board
@@ -108,8 +113,8 @@ class Ticket(TicketBase, table=True):
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
 
     # Self-referential relationships
     # "back_populates" creates a bidirectional link between parent and children
