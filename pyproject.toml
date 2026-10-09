@@ -15,5 +15,6 @@ platforms = ["osx-arm64", "linux-aarch64"]
 [tool.pixi.pypi-dependencies]
 homelab = { path = ".", editable = true }
 kanana-banana = { path = "packages/kanana-banana", editable = true }
+dev-spaces = { path = "packages/dev-spaces", editable = true }
 
 [tool.pixi.tasks]

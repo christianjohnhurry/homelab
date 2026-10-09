@@ -9,3 +9,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Project plan (`PLAN.md`) covering commands, behaviour, versioning and roadmap.
+- `dev-spaces` CLI with `--version`, runnable via `pixi run dev-spaces`.
