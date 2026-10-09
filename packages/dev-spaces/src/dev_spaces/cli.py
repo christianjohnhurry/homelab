@@ -205,6 +205,8 @@ def create(
             "--label", f"{LABEL}.version={__version__}",
             "--env-file", str(config.secrets_path()),
             "--env", f"DEV_SPACE={name}",
+            # Forward signals to `sleep infinity`, so stop is instant
+            "--init",
             *port_args,
             ref,
         )
@@ -221,6 +223,112 @@ def create(
     _install_deps(name)
     typer.secho(f"\nReady: {name}", fg=typer.colors.GREEN)
     typer.echo(f"  dev-spaces shell {name}")
+
+
+def _get(name: str) -> dict:
+    """Inspect a dev-spaces container by name, or fail."""
+    try:
+        [info] = docker.inspect(name)
+    except docker.DockerError:
+        _fail(f"no container named {name!r}. See `dev-spaces list`.")
+    if info["Config"]["Labels"].get(LABEL) != "1":
+        _fail(f"{name!r} is not a dev-spaces container.")
+    return info
+
+
+def _is_running(info: dict) -> bool:
+    return info["State"]["Running"]
+
+
+def _port_map(info: dict) -> list[tuple[str, str]]:
+    """(container port, host port) pairs for published ports."""
+    pairs = []
+    for container_port, bindings in (info["NetworkSettings"]["Ports"] or {}).items():
+        for binding in bindings or []:
+            pairs.append((container_port.split("/")[0], binding["HostPort"]))
+    return sorted(pairs, key=lambda p: int(p[0]))
+
+
+def _current_branch(info: dict) -> str:
+    """The checked-out branch if running, otherwise the branch it was created for."""
+    name = info["Name"].lstrip("/")
+    if _is_running(info):
+        result = docker.run(
+            "exec", name, "git", "-C", CODE_DIR, "branch", "--show-current", check=False
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    return info["Config"]["Labels"].get(f"{LABEL}.branch", "?")
+
+
+def _require_docker() -> None:
+    try:
+        docker.ping()
+    except docker.DockerError as e:
+        _fail(str(e))
+
+
+@app.command("list")
+def list_() -> None:
+    """List dev-spaces containers."""
+    _require_docker()
+    infos = docker.inspect(*docker.find(f"{LABEL}=1"))
+    if not infos:
+        typer.echo("No dev-spaces containers. Create one with `dev-spaces create`.")
+        return
+    rows = [("NAME", "REPO", "BRANCH", "STATUS", "PORTS")]
+    for info in infos:
+        labels = info["Config"]["Labels"]
+        ports = "  ".join(f"{c}→{h}" for c, h in _port_map(info)) or "-"
+        rows.append((
+            info["Name"].lstrip("/"),
+            labels.get(f"{LABEL}.repo", "?"),
+            _current_branch(info),
+            info["State"]["Status"],
+            ports,
+        ))
+    widths = [max(len(row[i]) for row in rows) for i in range(len(rows[0]) - 1)]
+    for row in rows:
+        typer.echo("  ".join(cell.ljust(w) for cell, w in zip(row, widths)) + "  " + row[-1])
+
+
+@app.command()
+def shell(name: str = typer.Argument(..., help="Container name.")) -> None:
+    """Open zsh in ~/code inside a container, starting it if stopped."""
+    _require_docker()
+    if not _is_running(_get(name)):
+        typer.echo(f"Starting {name}")
+        docker.run("start", name)
+    docker.exec_interactive("--workdir", CODE_DIR, name, "zsh")
+
+
+@app.command()
+def ports(name: str = typer.Argument(..., help="Container name.")) -> None:
+    """Show where a container's ports are published on this Mac."""
+    _require_docker()
+    info = _get(name)
+    if not _is_running(info):
+        _fail(f"{name} is stopped, so its ports aren't published. Start it first.")
+    for container_port, host_port in _port_map(info):
+        typer.echo(f"{container_port:>5} → http://localhost:{host_port}")
+
+
+@app.command()
+def start(name: str = typer.Argument(..., help="Container name.")) -> None:
+    """Start a stopped container. Host ports may change."""
+    _require_docker()
+    _get(name)
+    docker.run("start", name)
+    typer.echo(f"Started {name}")
+
+
+@app.command()
+def stop(name: str = typer.Argument(..., help="Container name.")) -> None:
+    """Stop a running container. Its files are kept."""
+    _require_docker()
+    _get(name)
+    docker.run("stop", name)
+    typer.echo(f"Stopped {name}")
 
 
 def main() -> None:

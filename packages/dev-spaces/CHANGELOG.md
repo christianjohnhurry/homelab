@@ -16,3 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `dev-spaces create <owner/repo> --new <name>` creates a new branch from the remote's default branch. The first `git push` sets its upstream.
 - Container ports from `config.toml` are published to random free ports on `127.0.0.1`.
 - A container whose clone or checkout fails is removed. A failed dependency install only warns and keeps the container.
+- `dev-spaces list` shows every dev-spaces container with its repo, current branch, status and port mappings.
+- `dev-spaces shell <name>` opens zsh in `~/code`, starting the container first if it's stopped.
+- `dev-spaces ports <name>` shows each published port as a `localhost` URL.
+- `dev-spaces start <name>` and `dev-spaces stop <name>`. Containers run with `--init`, so stopping is instant.
