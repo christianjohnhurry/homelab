@@ -10,7 +10,7 @@ requires = ["hatchling"]
 
 [tool.pixi.workspace]
 channels = ["conda-forge"]
-platforms = ["osx-64"]
+platforms = ["osx-arm64", "linux-aarch64"]
 
 [tool.pixi.pypi-dependencies]
 homelab = { path = ".", editable = true }

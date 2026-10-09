@@ -119,11 +119,10 @@ Refuses if any branch in `~/code` has:
 
 `--force` overrides it. For a stopped container, `rm` starts it briefly to run the check.
 
-## Known Issues
+## Requirements for Repos
 
-- **Pixi platforms:** homelab's root `pyproject.toml` lists only `platforms = ["osx-64"]`, so
-  `pixi install` inside a Linux container will fail for this repo. Repos used with dev-spaces
-  need `linux-aarch64` added (and probably `osx-arm64` instead of `osx-64`).
+- **Pixi platforms:** a pixi repo must list `linux-aarch64` in `platforms`, or `pixi install`
+  fails inside the container. Homelab lists `osx-arm64` and `linux-aarch64`.
 
 ## Versioning
 
