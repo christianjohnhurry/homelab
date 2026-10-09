@@ -21,9 +21,11 @@ dev-spaces = { path = "packages/dev-spaces", editable = true }
 
 [tool.pixi.feature.test.pypi-dependencies]
 pytest = ">=8"
+httpx2 = "*"
 
 [tool.pixi.feature.test.tasks]
 test-dev-spaces = "pytest packages/dev-spaces/tests"
+test-kanana-banana = "pytest packages/kanana-banana/tests"
 
 [tool.pixi.environments]
 default = { solve-group = "default" }
