@@ -165,13 +165,12 @@ def create(
     cfg = _load_config()
     if warning := config.check_secrets_permissions():
         typer.secho(f"warning: {warning}", fg=typer.colors.YELLOW, err=True)
-    secrets = config.read_secrets()
-    if not secrets.get("CLAUDE_CODE_OAUTH_TOKEN"):
-        typer.secho("warning: CLAUDE_CODE_OAUTH_TOKEN is empty; run `claude setup-token`",
-                    fg=typer.colors.YELLOW, err=True)
     ref = image_ref(cfg)
 
     try:
+        if not config.read_secrets().get("CLAUDE_CODE_OAUTH_TOKEN"):
+            typer.secho("warning: CLAUDE_CODE_OAUTH_TOKEN is empty; run `claude setup-token`",
+                        fg=typer.colors.YELLOW, err=True)
         token = config.github_token()
         docker.ping()
         if docker.run("image", "inspect", ref, check=False).returncode != 0:

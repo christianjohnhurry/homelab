@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - An out-of-range pick from the branch list asks again instead of crashing.
+- `create` reports a missing `secrets.env` as an error instead of a traceback.
 
 ### Added
 - Project plan (`PLAN.md`) covering commands, behaviour, versioning and roadmap.
