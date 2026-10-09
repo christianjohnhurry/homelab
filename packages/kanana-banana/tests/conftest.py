@@ -42,8 +42,10 @@ def api(client):
     """Small helpers for building fixtures through the real API."""
 
     class Api:
-        def board(self, name="Homelab", **fields):
-            r = client.post("/api/v1/boards", json={"name": name, **fields})
+        def board(self, name="Homelab", key=None, **fields):
+            # Default key: the name's letters, e.g. "Other Board" -> OTHERBOARD
+            key = key or "".join(c for c in name if c.isalpha()).upper()
+            r = client.post("/api/v1/boards", json={"key": key, "name": name, **fields})
             assert r.status_code == 201, r.text
             return r.json()
 

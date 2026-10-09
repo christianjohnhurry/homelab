@@ -7,7 +7,27 @@
         hx-post="{% if board %}/boards/{{ board.id }}/edit{% else %}/boards{% endif %}"
         hx-target="body"
         hx-swap="none"
-        hx-on::after-request="if(event.detail.successful) { location.reload(); }">
+        hx-on::after-request="if(event.detail.successful) { location.reload(); } else { alert(JSON.parse(event.detail.xhr.responseText).detail); }">
+
+        <div class="form-group">
+            <label for="key">Board Key</label>
+            {% if board %}
+            <input type="text" id="key" value="{{ board.key }}" disabled>
+            <small>Keys can't be changed: branch names include them</small>
+            {% else %}
+            <input
+                type="text"
+                id="key"
+                name="key"
+                required
+                maxlength="50"
+                pattern="[A-Za-z]+"
+                title="Letters only"
+                style="text-transform: uppercase"
+                placeholder="e.g., HML">
+            <small>Letters only. Prefixes ticket keys (HML-42) and branch names. Can't be changed later</small>
+            {% endif %}
+        </div>
 
         <div class="form-group">
             <label for="name">Board Name</label>

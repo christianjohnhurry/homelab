@@ -45,9 +45,26 @@ def test_pages_render(client, tree, path, expected):
 
 
 def test_create_board_form(client):
-    r = client.post("/boards", data={"name": "From Form", "repo_url": "", "description": ""})
+    r = client.post("/boards", data={"key": "frm", "name": "From Form", "repo_url": "", "description": ""})
     assert r.status_code == 200
-    assert [b["name"] for b in client.get("/api/v1/boards").json()] == ["From Form"]
+    [board] = client.get("/api/v1/boards").json()
+    assert (board["key"], board["name"]) == ("FRM", "From Form")
+
+
+@pytest.mark.parametrize(
+    ("key", "status", "message"),
+    [("HML-1", 400, "letters only"), ("HOMELAB", 409, "already used")],
+)
+def test_create_board_form_rejects_key(client, tree, key, status, message):
+    r = client.post("/boards", data={"key": key, "name": "X", "repo_url": "", "description": ""})
+    assert r.status_code == status
+    assert message in r.json()["detail"]
+
+
+def test_board_form_shows_key_read_only_when_editing(client, tree):
+    html = client.get(f"/boards/{tree['board']['id']}/edit").text
+    assert 'value="HOMELAB" disabled' in html
+    assert 'name="key"' not in html
 
 
 def test_create_ticket_form(client, tree):

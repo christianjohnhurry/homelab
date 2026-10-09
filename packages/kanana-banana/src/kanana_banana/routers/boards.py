@@ -29,8 +29,14 @@ router = APIRouter(tags=["boards"])
 
 
 @router.get("/api/v1/boards", response_model=list[BoardRead])
-def api_list_boards(session: Session = Depends(get_session)) -> list[Board]:
-    """List all boards."""
+def api_list_boards(
+    key: Optional[str] = None,
+    session: Session = Depends(get_session),
+) -> list[Board]:
+    """List all boards, or the board with the given key (case-insensitive)."""
+    if key is not None:
+        board = crud.get_board_by_key(session, key)
+        return [board] if board else []
     return crud.list_boards(session)
 
 
@@ -43,8 +49,11 @@ def api_create_board(
     board_create: BoardCreate,
     session: Session = Depends(get_session),
 ) -> Board:
-    """Create a new board."""
-    return crud.create_board(session, board_create)
+    """Create a new board. The key must be unused."""
+    try:
+        return crud.create_board(session, board_create)
+    except crud.DuplicateBoardKeyError as e:
+        raise HTTPException(status_code=http_status.HTTP_409_CONFLICT, detail=str(e))
 
 
 @router.get("/api/v1/boards/{board_id}", response_model=BoardRead)
@@ -120,6 +129,7 @@ def new_board_form(request: Request):
 @router.post("/boards", response_class=HTMLResponse)
 def create_board(
     request: Request,
+    key: str = Form(...),
     name: str = Form(...),
     repo_url: Optional[str] = Form(None),
     description: str = Form(""),
@@ -129,13 +139,24 @@ def create_board(
     Handle board creation from form submission.
 
     On success, returns empty response (JS will reload the page).
+    On a bad or duplicate key, returns an error the form shows to the user.
     """
-    board_create = BoardCreate(
-        name=name,
-        repo_url=repo_url if repo_url else None,
-        description=description,
-    )
-    crud.create_board(session, board_create)
+    try:
+        board_create = BoardCreate(
+            key=key,
+            name=name,
+            repo_url=repo_url if repo_url else None,
+            description=description,
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail="Board key must be letters only, e.g. HML",
+        )
+    try:
+        crud.create_board(session, board_create)
+    except crud.DuplicateBoardKeyError as e:
+        raise HTTPException(status_code=http_status.HTTP_409_CONFLICT, detail=str(e))
     return HTMLResponse("")
 
 

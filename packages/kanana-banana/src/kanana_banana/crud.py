@@ -22,6 +22,10 @@ class HierarchyError(ValueError):
     pass
 
 
+class DuplicateBoardKeyError(ValueError):
+    """Raised when a board key is already taken."""
+
+
 # =============================================================================
 # Board CRUD Operations
 # =============================================================================
@@ -34,6 +38,8 @@ def create_board(session: Session, board_create: BoardCreate) -> Board:
     A board represents a repository or project namespace with its own
     kanban view.
     """
+    if get_board_by_key(session, board_create.key) is not None:
+        raise DuplicateBoardKeyError(f"Board key {board_create.key} is already used.")
     board = Board.model_validate(board_create)
     session.add(board)
     session.commit()
@@ -44,6 +50,11 @@ def create_board(session: Session, board_create: BoardCreate) -> Board:
 def get_board(session: Session, board_id: int) -> Optional[Board]:
     """Get a board by id. Returns None if not found."""
     return session.get(Board, board_id)
+
+
+def get_board_by_key(session: Session, key: str) -> Optional[Board]:
+    """Get a board by key, case-insensitively. Returns None if not found."""
+    return session.exec(select(Board).where(Board.key == key.upper())).first()
 
 
 def list_boards(session: Session) -> list[Board]:

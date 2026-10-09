@@ -1,7 +1,9 @@
 import enum
+import re
 from datetime import datetime, timezone
 from typing import Optional
 
+from pydantic import ConfigDict, field_validator
 from sqlmodel import SQLModel, Field, Relationship
 
 
@@ -36,6 +38,9 @@ class Board(SQLModel, table=True):
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    # Short uppercase code that prefixes ticket keys (HML-42) and branch names.
+    # Set once at creation and never changed, because branch names embed it.
+    key: str = Field(max_length=50, unique=True, index=True)
     name: str = Field(max_length=200, index=True)
     repo_url: Optional[str] = Field(default=None, max_length=500)
     description: str = Field(default="")
@@ -47,16 +52,40 @@ class Board(SQLModel, table=True):
     tickets: list["Ticket"] = Relationship(back_populates="board")
 
 
+BOARD_KEY_PATTERN = re.compile(r"^[A-Za-z]+$")
+
+
+def normalise_board_key(value: str) -> str:
+    """Board keys are letters only, of any length, stored uppercase."""
+    value = value.strip()
+    if not BOARD_KEY_PATTERN.match(value):
+        raise ValueError("Board key must be letters only, e.g. HML")
+    return value.upper()
+
+
 class BoardCreate(SQLModel):
     """Schema for creating a board."""
 
+    key: str = Field(max_length=50)
     name: str = Field(max_length=200)
     repo_url: Optional[str] = Field(default=None, max_length=500)
     description: str = Field(default="")
 
+    @field_validator("key")
+    @classmethod
+    def _normalise_key(cls, value: str) -> str:
+        return normalise_board_key(value)
+
 
 class BoardUpdate(SQLModel):
-    """Schema for partial board updates."""
+    """
+    Schema for partial board updates.
+
+    There is no key field: keys can't change. Unknown fields are rejected,
+    so an attempt to change the key fails loudly instead of being ignored.
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
     name: Optional[str] = Field(default=None, max_length=200)
     repo_url: Optional[str] = Field(default=None, max_length=500)
@@ -67,6 +96,7 @@ class BoardRead(SQLModel):
     """Schema for board API responses."""
 
     id: int
+    key: str
     name: str
     repo_url: Optional[str]
     description: str

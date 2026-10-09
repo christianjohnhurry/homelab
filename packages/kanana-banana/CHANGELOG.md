@@ -15,6 +15,7 @@ Versions before 0.1.1 predate this changelog.
 - The startup migration that assigned pre-board tickets to a default board.
 
 ### Added
+- Board keys: every board has a unique key of letters (any length, stored uppercase, e.g. `HML`) that prefixes its ticket keys and branch names. The key is required when creating a board and can't be changed afterwards. `GET /api/v1/boards?key=HML` finds a board by key. The board form shows the server's error when a key is invalid or taken.
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 
 ## [0.1.1] - 2026-10-10
