@@ -29,6 +29,7 @@ Versions before 0.1.1 predate this changelog.
 - `kb` ticket commands: `add` (the type follows from `--parent`, or `--project`), `list` (`--status`, `--type`, `--tree`, `--json`), `show` (`--json`), `move`, `edit`, `delete` (confirms, listing what's underneath, unless `--yes`), and `export`. Tickets are referred to by key in any letter case, and the board comes from `--board` or the current git repo.
 - `GET /api/v1/tickets` accepts `board_id` and returns tickets in board and number order.
 - `kb branch KEY` creates the ticket's branch on GitHub and prints the `dev-spaces create` command to start work on it. For a subtask, it also says which branch the PR should target.
+- A `ticket-workflow` Claude skill (in the homelab repo's `skills/`) for planning features into tickets and working on them with `kb branch` and dev-spaces.
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 
 ## [0.1.1] - 2026-10-10

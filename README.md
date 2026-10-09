@@ -29,6 +29,18 @@ pixi run dev-spaces create owner/repo feat/my-bra
 
 See [packages/dev-spaces/README.md](packages/dev-spaces/README.md) for details.
 
+## Claude Skills
+
+`skills/` holds Claude Code skills for these tools. **ticket-workflow** teaches Claude to plan
+features into Kanana Banana tickets, create their branches, and start dev-spaces for them,
+following the board's philosophy (it never moves ticket statuses unless asked).
+
+Link a skill into your user skills so it works in every repo:
+
+```bash
+ln -s ~/code/homelab/skills/ticket-workflow ~/.claude/skills/ticket-workflow
+```
+
 ## Development
 
 This project uses [pixi](https://pixi.sh) for dependency management.
