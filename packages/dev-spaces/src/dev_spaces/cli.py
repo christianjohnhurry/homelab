@@ -331,6 +331,58 @@ def stop(name: str = typer.Argument(..., help="Container name.")) -> None:
     typer.echo(f"Stopped {name}")
 
 
+def _git(name: str, *args: str) -> str:
+    return docker.run("exec", name, "git", "-C", CODE_DIR, *args).stdout.strip()
+
+
+def _indent(text: str, limit: int = 10) -> str:
+    lines = text.splitlines()
+    shown = [f"    {line}" for line in lines[:limit]]
+    if len(lines) > limit:
+        shown.append(f"    ... and {len(lines) - limit} more")
+    return "\n".join(shown)
+
+
+def _unsaved_work(name: str) -> list[str]:
+    """Reasons removing the container would lose work. Empty means safe."""
+    if docker.run("exec", name, "test", "-d", f"{CODE_DIR}/.git", check=False).returncode != 0:
+        return []
+    problems = []
+    if status := _git(name, "status", "--porcelain"):
+        problems.append("uncommitted changes:\n" + _indent(status))
+    if unpushed := _git(name, "log", "--branches", "--not", "--remotes",
+                        "--format=%h %s (%D)"):
+        problems.append("commits not pushed:\n" + _indent(unpushed))
+    if stashes := _git(name, "stash", "list"):
+        problems.append("stashed changes:\n" + _indent(stashes))
+    return problems
+
+
+@app.command()
+def remove(
+    name: str = typer.Argument(..., help="Container name."),
+    force: bool = typer.Option(False, "--force", help="Remove even if work would be lost."),
+) -> None:
+    """Remove a container. Refuses if it holds uncommitted or unpushed work."""
+    _require_docker()
+    info = _get(name)
+    if not force:
+        was_running = _is_running(info)
+        if not was_running:
+            # The check needs git inside the container
+            docker.run("start", name)
+        problems = _unsaved_work(name)
+        if problems:
+            if not was_running:
+                docker.run("stop", name)
+            typer.secho(f"Refusing to remove {name}, it has", fg=typer.colors.RED, err=True)
+            for problem in problems:
+                typer.echo(f"  - {problem}", err=True)
+            _fail(f"push or discard the work, or use `dev-spaces remove {name} --force`")
+    docker.run("rm", "--force", name)
+    typer.echo(f"Removed {name}")
+
+
 def main() -> None:
     """Entry point for the `dev-spaces` script."""
     app()

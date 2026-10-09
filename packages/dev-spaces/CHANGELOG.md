@@ -20,3 +20,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `dev-spaces shell <name>` opens zsh in `~/code`, starting the container first if it's stopped.
 - `dev-spaces ports <name>` shows each published port as a `localhost` URL.
 - `dev-spaces start <name>` and `dev-spaces stop <name>`. Containers run with `--init`, so stopping is instant.
+- `dev-spaces remove <name>` refuses while the container has uncommitted changes, unpushed commits or stashes, and lists them. `--force` overrides it. A stopped container is started briefly for the check and stopped again.

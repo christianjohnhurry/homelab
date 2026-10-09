@@ -61,7 +61,7 @@ User config, outside the repo:
 | `dev-spaces shell <name>` | Opens zsh in `~/code` inside the container |
 | `dev-spaces ports <name>` | Shows the container's port mappings |
 | `dev-spaces start <name>` / `stop <name>` | Starts or stops a container |
-| `dev-spaces rm <name> [--force]` | Deletes a container, but refuses if work would be lost |
+| `dev-spaces remove <name> [--force]` | Deletes a container, but refuses if work would be lost |
 | `dev-spaces --version` | Prints the version |
 
 ## Behaviour
@@ -112,12 +112,13 @@ Add more installers only when a project needs them.
 - The ports are fixed when the container is created, because Docker can't add ports to an existing container.
 - **Gotcha:** apps inside the container must listen on `0.0.0.0`, not `127.0.0.1`.
 
-### `rm` safety check
+### `remove` safety check
 Refuses if any branch in `~/code` has:
 - uncommitted changes (`git status --porcelain`), or
 - commits that haven't been pushed (`git log --branches --not --remotes`).
 
-`--force` overrides it. For a stopped container, `rm` starts it briefly to run the check.
+Stashed changes count too. `--force` overrides it. For a stopped container, `remove` starts it briefly to run the check.
+Named `remove` rather than `rm` so it is never typed by reflex.
 
 ## Requirements for Repos
 
@@ -160,7 +161,7 @@ Build in this order. Each step is one commit with its changelog entry.
 4. **Branch matching:** `ls-remote`, prefix match, re-prompt, numbered pick
 5. **`create`:** run, labels, ports, secrets, dotfiles, clone, checkout / `--new`, dependency install
 6. **`list`, `shell`, `ports`, `start`, `stop`**
-7. **`rm`** with the safety check
+7. **`remove`** with the safety check
 8. **README** and release `0.1.0`
 
 ### Later
