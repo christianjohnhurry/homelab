@@ -83,8 +83,8 @@ def create_ticket(
     Create a new ticket.
 
     Hierarchy rules are enforced:
-    - Projects cannot have a parent
-    - Tasks must have a project as parent
+    - Projects cannot have a parent, and need a board_id
+    - Tasks have a project as parent, or no parent and a board_id
     - Subtasks must have a task as parent
     """
     try:

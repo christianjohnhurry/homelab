@@ -135,7 +135,8 @@ def validate_hierarchy(
 
     Rules:
     - project: no parent allowed, board_id required
-    - task: parent must exist and be a project, inherits board from parent
+    - task: either a project parent (board inherited from it), or no parent
+      with a board_id, for miscellaneous work such as fixes
     - subtask: parent must exist and be a task, inherits board from parent
 
     Args:
@@ -150,20 +151,20 @@ def validate_hierarchy(
     Raises:
         HierarchyError: If the hierarchy constraint is violated.
     """
-    if ticket_type == TicketType.PROJECT:
-        if parent_id is not None:
-            raise HierarchyError("Projects cannot have a parent ticket.")
+    if ticket_type == TicketType.PROJECT and parent_id is not None:
+        raise HierarchyError("Projects cannot have a parent ticket.")
+
+    # Projects, and tasks without a project, attach straight to a board
+    if ticket_type == TicketType.PROJECT or (ticket_type == TicketType.TASK and parent_id is None):
         if board_id is None:
-            raise HierarchyError("Projects must belong to a board.")
-        # Verify board exists
-        board = session.get(Board, board_id)
-        if board is None:
+            raise HierarchyError(f"{ticket_type.value.title()}s without a parent must belong to a board.")
+        if session.get(Board, board_id) is None:
             raise HierarchyError(f"Board with id {board_id} not found.")
         return board_id
 
-    # Tasks and subtasks require a parent
+    # Subtasks require a parent
     if parent_id is None:
-        raise HierarchyError(f"{ticket_type.value.title()}s must have a parent ticket.")
+        raise HierarchyError("Subtasks must have a parent ticket.")
 
     # Fetch the parent to check its type
     parent = session.get(Ticket, parent_id)

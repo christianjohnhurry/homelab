@@ -119,3 +119,12 @@ def test_keys_shown_on_cards_and_details(client, tree):
     assert '<span class="ticket-key">HOMELAB-2</span>' in board_html
     for name, key in [("project", "HOMELAB-1"), ("task", "HOMELAB-2"), ("subtask", "HOMELAB-3")]:
         assert f'<span class="ticket-key">{key}</span>' in client.get(f"/tickets/{tree[name]['id']}").text
+
+
+def test_create_parentless_task_form(client, tree):
+    r = client.post(
+        f"/boards/{tree['board']['id']}/tickets",
+        data={"name": "Loose Fix", "ticket_type": "task", "status": "to-do", "parent_id": "", "description": ""},
+    )
+    assert r.status_code == 200
+    assert "Loose Fix" in client.get(f"/boards/{tree['board']['id']}").text

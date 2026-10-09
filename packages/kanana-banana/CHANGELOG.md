@@ -21,6 +21,7 @@ Versions before 0.1.1 predate this changelog.
 - Per-board ticket numbers: every ticket gets the next number on its board and a key such as `HML-42`, returned as `number` and `key`. Numbers are never reused.
 - `GET /api/v1/tickets/by-key/{key}` looks up a ticket by key, case-insensitively.
 - Ticket keys are shown on cards and in detail views.
+- Tasks without a parent project, for miscellaneous work such as fixes, as the README's philosophy describes. They need a `board_id`, can have subtasks, and appear on the kanban columns. The tree view still shows only projects.
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 
 ## [0.1.1] - 2026-10-10

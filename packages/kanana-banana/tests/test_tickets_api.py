@@ -52,6 +52,35 @@ class TestCreate:
         assert r.status_code == 400
         assert "must belong to a board" in r.json()["detail"]
 
+    def test_parentless_task(self, client, tree):
+        r = client.post("/api/v1/tickets", json={
+            "name": "Fix typo", "ticket_type": "task", "board_id": tree["board"]["id"],
+        })
+        assert r.status_code == 201
+        assert r.json()["parent_id"] is None
+        assert r.json()["board_id"] == tree["board"]["id"]
+        assert r.json()["key"] == "HOMELAB-4"
+
+    def test_parentless_task_needs_board(self, client):
+        r = client.post("/api/v1/tickets", json={"name": "x", "ticket_type": "task"})
+        assert r.status_code == 400
+        assert "must belong to a board" in r.json()["detail"]
+
+    def test_parentless_task_board_must_exist(self, client):
+        r = client.post("/api/v1/tickets", json={"name": "x", "ticket_type": "task", "board_id": 999})
+        assert r.status_code == 400
+
+    def test_parentless_task_can_have_subtasks(self, api, tree):
+        task = api.ticket("Loose", "task", board_id=tree["board"]["id"])
+        subtask = api.ticket("Part", "subtask", parent_id=task["id"])
+        assert subtask["board_id"] == tree["board"]["id"]
+
+    def test_detach_task_from_project(self, client, tree):
+        r = client.patch(f"/api/v1/tickets/{tree['task']['id']}", json={"parent_id": None})
+        assert r.status_code == 200
+        assert r.json()["parent_id"] is None
+        assert r.json()["board_id"] == tree["board"]["id"]
+
     def test_project_board_must_exist(self, client):
         r = client.post("/api/v1/tickets", json={"name": "p", "ticket_type": "project", "board_id": 999})
         assert r.status_code == 400
