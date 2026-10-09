@@ -1,0 +1,15 @@
+# dev-spaces configuration
+
+[git]
+# Identity used for commits inside containers.
+name = {git_name}
+email = {git_email}
+
+[image]
+# Base image name. It is tagged with the dev-spaces version, e.g. dev-spaces-base:0.1.0
+name = "dev-spaces-base"
+
+[ports]
+# Container ports to publish. Docker maps each to a free port on 127.0.0.1.
+# Fixed at create time: Docker cannot add ports to an existing container.
+container = [8000, 8080, 5173, 3000]

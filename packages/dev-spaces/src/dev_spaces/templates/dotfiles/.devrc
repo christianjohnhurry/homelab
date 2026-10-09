@@ -1,0 +1,6 @@
+# dev-spaces .devrc: personal aliases and settings, sourced by .zshrc.
+# Never put secrets here; they belong in ~/.config/dev-spaces/secrets.env.
+
+alias gs='git status'
+alias gl='git log --oneline --graph -20'
+alias yolo='claude --dangerously-skip-permissions'
