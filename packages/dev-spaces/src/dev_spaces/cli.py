@@ -94,12 +94,13 @@ def _resolve_branch(available: list[str], prefix: str) -> str:
             return matches[0]
         if not matches:
             typer.secho(f"No remote branch starts with {prefix!r}.", fg=typer.colors.RED, err=True)
-            prefix = typer.prompt("Branch prefix")
+            prefix = click.prompt("Branch prefix")
             continue
         typer.echo(f"Several branches start with {prefix!r}:")
         for i, branch in enumerate(matches, 1):
             typer.echo(f"  {i}. {branch}")
-        choice = typer.prompt("Pick one", type=click.IntRange(1, len(matches)))
+        # click.prompt re-asks on an invalid pick; typer.prompt raises instead
+        choice = click.prompt("Pick one", type=click.IntRange(1, len(matches)))
         return matches[choice - 1]
 
 

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- An out-of-range pick from the branch list asks again instead of crashing.
+
 ### Added
 - Project plan (`PLAN.md`) covering commands, behaviour, versioning and roadmap.
 - `dev-spaces` CLI with `--version`, runnable via `pixi run dev-spaces`.
