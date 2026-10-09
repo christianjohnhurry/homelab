@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from kanana_banana import __version__
 from kanana_banana.database import init_db
 
 
@@ -38,7 +39,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Kanana Banana",
         description="A simple kanban board for tracking projects, tasks, and subtasks.",
-        version="0.1.0",
+        version=__version__,
         lifespan=lifespan,
     )
 

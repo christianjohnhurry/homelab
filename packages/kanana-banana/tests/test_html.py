@@ -90,3 +90,8 @@ def test_delete_ticket_form(client, tree):
     assert r.status_code == 200
     names = {t["name"] for t in client.get("/api/v1/tickets").json()}
     assert names == {"Big Project"}
+
+
+def test_openapi_version_matches_package(client):
+    from kanana_banana import __version__
+    assert client.get("/openapi.json").json()["info"]["version"] == __version__
