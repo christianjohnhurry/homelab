@@ -111,6 +111,7 @@ def api_delete_board(
 def new_board_form(request: Request):
     """Render the create board form (HTMX partial for modal)."""
     return templates.TemplateResponse(
+        request,
         "partials/board_form.html",
         {"request": request, "board": None},
     )
@@ -153,6 +154,7 @@ def edit_board_form(
         )
 
     return templates.TemplateResponse(
+        request,
         "partials/board_form.html",
         {"request": request, "board": board},
     )

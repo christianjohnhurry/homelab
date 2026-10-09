@@ -62,7 +62,7 @@ def index(
     context["board"] = None
     context["current_board_id"] = None
     context["tickets_by_status"] = {s: [] for s in TicketStatus}
-    return templates.TemplateResponse("board.html", context)
+    return templates.TemplateResponse(request,"board.html", context)
 
 
 @router.get("/boards/{board_id}", response_class=HTMLResponse)
@@ -91,7 +91,7 @@ def board_view(
     context["tickets_by_status"] = tickets_by_status
     context["no_boards"] = False
 
-    return templates.TemplateResponse("board.html", context)
+    return templates.TemplateResponse(request,"board.html", context)
 
 
 @router.get("/boards/{board_id}/tree", response_class=HTMLResponse)
@@ -117,7 +117,7 @@ def board_tree_view(
     context["projects"] = projects
     context["no_boards"] = False
 
-    return templates.TemplateResponse("tree_view.html", context)
+    return templates.TemplateResponse(request,"tree_view.html", context)
 
 
 # =============================================================================
@@ -144,7 +144,7 @@ def get_column(
     context["tickets"] = tickets
     context["current_board_id"] = board_id
 
-    return templates.TemplateResponse("partials/column.html", context)
+    return templates.TemplateResponse(request,"partials/column.html", context)
 
 
 # =============================================================================
@@ -180,7 +180,7 @@ def new_ticket_form(
     context["prefill_parent_id"] = parent_id
     context["prefill_ticket_type"] = ticket_type
 
-    return templates.TemplateResponse("partials/ticket_form.html", context)
+    return templates.TemplateResponse(request,"partials/ticket_form.html", context)
 
 
 @router.post("/boards/{board_id}/tickets", response_class=HTMLResponse)
@@ -248,7 +248,7 @@ def get_ticket_detail(
     else:  # SUBTASK
         template = "partials/ticket_detail.html"
 
-    return templates.TemplateResponse(template, context)
+    return templates.TemplateResponse(request, template, context)
 
 
 @router.get("/tickets/{ticket_id}/edit", response_class=HTMLResponse)
@@ -282,7 +282,7 @@ def edit_ticket_form(
     context["possible_parents"] = possible_parents
     context["current_board_id"] = ticket.board_id
 
-    return templates.TemplateResponse("partials/ticket_form.html", context)
+    return templates.TemplateResponse(request,"partials/ticket_form.html", context)
 
 
 @router.post("/tickets/{ticket_id}/edit", response_class=HTMLResponse)
@@ -359,6 +359,7 @@ def move_ticket(
     context["status"] = status
     context["tickets"] = target_tickets
     target_html = templates.TemplateResponse(
+        request,
         "partials/column.html", context
     ).body.decode()
 
@@ -368,6 +369,7 @@ def move_ticket(
         context["status"] = old_status
         context["tickets"] = source_tickets
         source_html = templates.TemplateResponse(
+            request,
             "partials/column.html", context
         ).body.decode()
 
