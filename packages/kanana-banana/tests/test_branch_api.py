@@ -1,54 +1,8 @@
 """POST /api/v1/tickets/{id}/branch against a fake GitHub."""
 
-import json
-
-import httpx2
 import pytest
 
-from kanana_banana import config, github
-from kanana_banana.app import app
-from kanana_banana.routers.tickets import get_github_factory
-
-
-class FakeGitHub:
-    """Records requests; repo o/homelab with default branch main and whatever branches exist."""
-
-    def __init__(self):
-        self.requests = []
-        self.branches = {"main": "sha-main"}
-        self.created_from = {}
-        self.fail_with = None
-
-    def __call__(self, request):
-        self.requests.append(request)
-        if self.fail_with:
-            return httpx2.Response(self.fail_with, json={"message": "nope"})
-        path = request.url.path
-        if path == "/repos/o/homelab":
-            return httpx2.Response(200, json={"default_branch": "main"})
-        if path.startswith("/repos/o/homelab/git/ref/heads/"):
-            name = path.removeprefix("/repos/o/homelab/git/ref/heads/")
-            if name in self.branches:
-                return httpx2.Response(200, json={"object": {"sha": self.branches[name]}})
-            return httpx2.Response(404, json={"message": "Not Found"})
-        if path == "/repos/o/homelab/git/refs" and request.method == "POST":
-            body = json.loads(request.read())
-            name = body["ref"].removeprefix("refs/heads/")
-            if name in self.branches:
-                return httpx2.Response(422, json={"message": "Reference already exists"})
-            self.branches[name] = f"sha-{name}"
-            self.created_from[name] = body["sha"]
-            return httpx2.Response(201, json={})
-        return httpx2.Response(404, json={"message": "Not Found"})
-
-
-@pytest.fixture
-def gh(client):
-    fake = FakeGitHub()
-    app.dependency_overrides[get_github_factory] = lambda: (
-        lambda: github.GitHub("test-token", transport=httpx2.MockTransport(fake))
-    )
-    return fake
+from kanana_banana import config
 
 
 @pytest.fixture

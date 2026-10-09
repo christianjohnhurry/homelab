@@ -28,6 +28,7 @@ Versions before 0.1.1 predate this changelog.
 - `kb`, a command-line client for the REST API (`pixi run kb`), starting with `kb board add KEY NAME [--repo URL]` and `kb board list [--json]`. It reaches the server at `KB_URL` (default `http://127.0.0.1:8000`) and says how to start it if it isn't running.
 - `kb` ticket commands: `add` (the type follows from `--parent`, or `--project`), `list` (`--status`, `--type`, `--tree`, `--json`), `show` (`--json`), `move`, `edit`, `delete` (confirms, listing what's underneath, unless `--yes`), and `export`. Tickets are referred to by key in any letter case, and the board comes from `--board` or the current git repo.
 - `GET /api/v1/tickets` accepts `board_id` and returns tickets in board and number order.
+- `kb branch KEY` creates the ticket's branch on GitHub and prints the `dev-spaces create` command to start work on it. For a subtask, it also says which branch the PR should target.
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 
 ## [0.1.1] - 2026-10-10

@@ -336,6 +336,29 @@ def export(key: str = typer.Argument(..., help="Ticket key, e.g. HML-42.")) -> N
     typer.echo(client.get(f"/api/v1/tickets/{ticket['id']}/export").rstrip("\n"))
 
 
+@app.command()
+def branch(key: str = typer.Argument(..., help="Task or subtask key, e.g. HML-42.")) -> None:
+    """
+    Create a ticket's branch on GitHub.
+
+    Tasks branch from the default branch. Subtasks are stacked on their task's
+    branch, so the task needs its branch first. Prints the dev-spaces command
+    to start working on it.
+    """
+    client = api()
+    ticket = get_ticket(client, key)
+    updated = client.post(f"/api/v1/tickets/{ticket['id']}/branch")
+    board = client.get(f"/api/v1/boards/{updated['board_id']}")
+    repo = parse_repo(board["repo_url"] or "")
+
+    typer.echo(f"Created branch {updated['branch']} for {_line(updated)}")
+    if updated["ticket_type"] == "subtask":
+        parent = client.get(f"/api/v1/tickets/{updated['parent_id']}")
+        typer.echo(f"  Stacked on {parent['branch']}: open its PR against that branch.")
+    typer.echo("\nStart working on it:")
+    typer.echo(f"  dev-spaces create {repo} {updated['branch']}")
+
+
 # --- entry point -------------------------------------------------------------------
 
 
