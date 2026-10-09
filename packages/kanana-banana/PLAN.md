@@ -109,8 +109,8 @@ The README documents the symlink setup.
 pytest in the existing pixi `test` feature, run with `pixi run test-kanana-banana`.
 
 - **API:** FastAPI `TestClient` with a temporary SQLite database for each test, using `app.dependency_overrides[get_session]`.
-- **GitHub:** faked with `httpx.MockTransport`, which records requests and returns canned responses. The real API is never called.
-- **CLI:** `kb` takes an injectable `httpx.Client`. Tests pass the `TestClient`, so the CLI runs against the real app in the same process.
+- **GitHub:** faked with `httpx2.MockTransport`, which records requests and returns canned responses. The real API is never called.
+- **CLI:** `kb` takes an injectable `httpx2.Client`. Tests pass the `TestClient`, so the CLI runs against the real app in the same process.
 
 ### Tests that gate 0.2.0
 **Existing API (a safety net before any changes):**

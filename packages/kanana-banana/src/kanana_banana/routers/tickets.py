@@ -14,8 +14,23 @@ from kanana_banana.models import (
     TicketType,
     TicketStatus,
 )
-from kanana_banana import crud
-from kanana_banana import export
+from kanana_banana import config, crud, export, github
+
+
+def get_github_factory():
+    """
+    FastAPI dependency: a factory for the GitHub client, using GH_TOKEN from
+    kanana-banana's secrets.env. Tests override it with a fake transport.
+    """
+    def factory() -> github.GitHub:
+        token = config.read_secret("GH_TOKEN")
+        if not token:
+            raise github.MissingTokenError(
+                f"GH_TOKEN is not set in {config.secrets_path()}. Add a fine-grained token "
+                "with Contents: read/write on the board's repo (file mode 600)."
+            )
+        return github.GitHub(token)
+    return factory
 
 
 router = APIRouter(prefix="/api/v1/tickets", tags=["tickets"])
@@ -177,3 +192,32 @@ def export_ticket(
         )
 
     return PlainTextResponse(content=markdown, media_type="text/markdown")
+
+
+@router.post("/{ticket_id}/branch", response_model=TicketRead, status_code=status.HTTP_201_CREATED)
+def create_ticket_branch(
+    ticket_id: int,
+    session: Session = Depends(get_session),
+    github_factory=Depends(get_github_factory),
+) -> Ticket:
+    """
+    Create the ticket's branch on GitHub (e.g. hml-42-add-login-flow) and record it.
+
+    Tasks branch from the repo's default branch; subtasks from their task's branch.
+    """
+    try:
+        ticket = crud.create_ticket_branch(session, ticket_id, github_factory)
+    except crud.TicketBranchError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except (crud.AlreadyBranchedError, github.BranchExistsError) as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except github.MissingTokenError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+    except github.GitHubError as e:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
+    if ticket is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket with id {ticket_id} not found",
+        )
+    return ticket

@@ -1,8 +1,12 @@
 from typing import Optional
 
+from typing import Callable
+
 from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
 
+from kanana_banana import github
+from kanana_banana.branching import branch_name
 from kanana_banana.models import (
     Board,
     BoardCreate,
@@ -24,6 +28,14 @@ class HierarchyError(ValueError):
 
 class DuplicateBoardKeyError(ValueError):
     """Raised when a board key is already taken."""
+
+
+class TicketBranchError(ValueError):
+    """Raised when a ticket can't get a branch (wrong type, no repo, unbranched parent)."""
+
+
+class AlreadyBranchedError(ValueError):
+    """Raised when a ticket already has a branch."""
 
 
 # =============================================================================
@@ -374,3 +386,56 @@ def get_board_tree(session: Session, board_id: int) -> list[Ticket]:
         .order_by(Ticket.name)
     )
     return list(session.exec(statement).all())
+
+
+# =============================================================================
+# Ticket Branches
+# =============================================================================
+
+
+def create_ticket_branch(
+    session: Session,
+    ticket_id: int,
+    github_factory: Callable[[], github.GitHub],
+) -> Optional[Ticket]:
+    """
+    Create a ticket's branch on GitHub and record it on the ticket.
+
+    Tasks branch from the repo's default branch. Subtasks are stacked: they
+    branch from their parent task's branch, which must exist first. Projects
+    never get branches. The GitHub client is only created once the ticket has
+    passed these checks, so they're reported even without a token.
+
+    Returns None if the ticket isn't found.
+    """
+    ticket = session.get(Ticket, ticket_id)
+    if ticket is None:
+        return None
+    if ticket.ticket_type == TicketType.PROJECT:
+        raise TicketBranchError("Projects don't get branches. Create one for a task or subtask.")
+    if ticket.branch:
+        raise AlreadyBranchedError(f"{ticket.key} already has branch {ticket.branch}.")
+
+    board = session.get(Board, ticket.board_id)
+    repo = github.parse_repo(board.repo_url or "")
+    if repo is None:
+        raise TicketBranchError(f"Board {board.key} has no GitHub repo URL. Set one to create branches.")
+
+    if ticket.ticket_type == TicketType.SUBTASK:
+        parent = session.get(Ticket, ticket.parent_id)
+        if not parent.branch:
+            raise TicketBranchError(
+                f"Create {parent.key}'s branch first: subtask branches are stacked on their task's branch."
+            )
+
+    client = github_factory()
+    base = parent.branch if ticket.ticket_type == TicketType.SUBTASK else client.default_branch(repo)
+    name = branch_name(ticket.key, ticket.name)
+    client.create_branch(repo, name, client.branch_sha(repo, base))
+
+    ticket.branch = name
+    ticket.updated_at = utc_now()
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+    return ticket

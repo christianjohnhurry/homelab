@@ -22,6 +22,9 @@ Versions before 0.1.1 predate this changelog.
 - `GET /api/v1/tickets/by-key/{key}` looks up a ticket by key, case-insensitively.
 - Ticket keys are shown on cards and in detail views.
 - Tasks without a parent project, for miscellaneous work such as fixes, as the README's philosophy describes. They need a `board_id`, can have subtasks, and appear on the kanban columns. The tree view still shows only projects.
+- Ticket branches: `POST /api/v1/tickets/{id}/branch` creates the ticket's branch on GitHub, named `{key}-{number}-{slug}` in lowercase (e.g. `hml-42-add-login-flow`), and records it on the ticket as `branch`. Tasks branch from the repo's default branch. Subtasks are stacked on their task's branch, which must exist first. Projects never get branches. A branch is never renamed when its ticket is.
+- The GitHub token is read from `~/.config/kanana-banana/secrets.env` (`GH_TOKEN=`, needs Contents: read/write). `KANANA_BANANA_CONFIG_DIR` overrides the location.
+- Ticket detail views show the branch.
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 
 ## [0.1.1] - 2026-10-10

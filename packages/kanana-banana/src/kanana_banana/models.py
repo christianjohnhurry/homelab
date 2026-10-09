@@ -149,6 +149,8 @@ class Ticket(TicketBase, table=True):
     # move between boards, so a key is fixed for life, like the branch name.
     number: Optional[int] = Field(default=None)
     key: Optional[str] = Field(default=None, max_length=60, unique=True, index=True)
+    # Git branch created for this task/subtask. Set once; never renamed.
+    branch: Optional[str] = Field(default=None, max_length=255)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
@@ -196,5 +198,6 @@ class TicketRead(TicketBase):
     id: int
     number: int
     key: str
+    branch: Optional[str]
     created_at: datetime
     updated_at: datetime
