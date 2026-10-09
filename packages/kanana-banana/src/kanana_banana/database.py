@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Generator
 
 from sqlmodel import SQLModel, Session, create_engine
@@ -15,21 +16,22 @@ engine = create_engine(
 )
 
 
+def ensure_database_dir(database_url: str) -> None:
+    """Create the parent directory of a file-based SQLite database."""
+    prefix = "sqlite:///"
+    if database_url.startswith(prefix) and len(database_url) > len(prefix):
+        Path(database_url.removeprefix(prefix)).parent.mkdir(parents=True, exist_ok=True)
+
+
 def init_db() -> None:
     """
-    Create all database tables and run migrations.
+    Create the database directory and all tables.
 
     Called once at application startup. SQLModel.metadata contains
     all table definitions from classes with table=True.
-
-    After creating tables, we run migrations to handle any existing
-    data that needs to be updated for new features (like boards).
     """
+    ensure_database_dir(settings.database_url)
     SQLModel.metadata.create_all(engine)
-
-    # Run migrations for existing data
-    from kanana_banana.migrations.add_boards import migrate
-    migrate()
 
 
 def get_session() -> Generator[Session, None, None]:

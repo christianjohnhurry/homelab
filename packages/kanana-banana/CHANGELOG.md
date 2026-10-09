@@ -8,6 +8,12 @@ Versions before 0.1.1 predate this changelog.
 
 ## [Unreleased]
 
+### Changed
+- **BREAKING:** The database now lives at `~/.local/share/kanana-banana/kanana_banana.db` (or under `$XDG_DATA_HOME`) instead of the directory the server was started from, so the board is the same wherever you start it. An old `kanana_banana.db` is not migrated. Point `KANANA_BANANA_DATABASE_URL` at it to keep using it.
+
+### Removed
+- The startup migration that assigned pre-board tickets to a default board.
+
 ### Added
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 

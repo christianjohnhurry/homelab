@@ -85,7 +85,7 @@ Set environment variables to customize:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `KANANA_BANANA_DATABASE_URL` | `sqlite:///kanana_banana.db` | Database connection string |
+| `KANANA_BANANA_DATABASE_URL` | `sqlite:///~/.local/share/kanana-banana/kanana_banana.db` (respects `XDG_DATA_HOME`) | Database connection string |
 | `KANANA_BANANA_DEBUG` | `True` | Enable SQL query logging |
 
 ## Tech Stack
