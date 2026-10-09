@@ -122,7 +122,12 @@ class Ticket(TicketBase, table=True):
         back_populates="children",
         sa_relationship_kwargs={"remote_side": "Ticket.id"},
     )
-    children: list["Ticket"] = Relationship(back_populates="parent")
+    # Deleting a ticket deletes its children (and theirs). SQLite doesn't
+    # enforce foreign keys by default, so the ORM does the cascade.
+    children: list["Ticket"] = Relationship(
+        back_populates="parent",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
     # Board relationship - links this ticket to a Board
     # The back_populates="tickets" connects to Board.tickets
