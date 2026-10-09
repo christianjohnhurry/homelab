@@ -127,13 +127,24 @@ class TestUpdate:
         r = client.patch(f"/api/v1/tickets/{tree['task']['id']}", json={"status": "on-hold"})
         assert r.json()["status"] == "on-hold"
 
-    def test_reparent_task_to_other_project(self, client, api, tree):
-        other_board = api.board("Other")
-        other = api.project("Other project", board=other_board)
+    def test_reparent_task_within_board(self, client, api, tree):
+        other = api.project("Other project", board=tree["board"])
         r = client.patch(f"/api/v1/tickets/{tree['task']['id']}", json={"parent_id": other["id"]})
         assert r.status_code == 200
         assert r.json()["parent_id"] == other["id"]
-        assert r.json()["board_id"] == other_board["id"]
+        assert r.json()["key"] == tree["task"]["key"]
+
+    def test_cannot_move_between_boards(self, client, api, tree):
+        other = api.project("Other project", board=api.board("Other"))
+        r = client.patch(f"/api/v1/tickets/{tree['task']['id']}", json={"parent_id": other["id"]})
+        assert r.status_code == 400
+        assert "between boards" in r.json()["detail"]
+        assert client.get(f"/api/v1/tickets/{tree['task']['id']}").json()["parent_id"] == tree["project"]["id"]
+
+    def test_project_cannot_change_board(self, client, api, tree):
+        other = api.board("Other")
+        r = client.patch(f"/api/v1/tickets/{tree['project']['id']}", json={"board_id": other["id"]})
+        assert r.status_code == 400
 
     def test_reparent_breaking_hierarchy(self, client, tree):
         r = client.patch(f"/api/v1/tickets/{tree['task']['id']}", json={"parent_id": tree["subtask"]["id"]})
@@ -184,16 +195,58 @@ class TestExport:
         assert r.headers["content-type"].startswith("text/markdown")
         md = r.text
         assert md.startswith("# [TASK] Task\n")
+        assert "- **Key:** HOMELAB-2" in md
         assert "- **Status:** to-do" in md
-        assert f"- **Parent:** [PROJECT] Project (#{tree['project']['id']})" in md
+        assert "- **Parent:** [PROJECT] Project (HOMELAB-1)" in md
         assert "- **Repo:** https://github.com/o/homelab" in md
         assert "## Description\n\nDo the thing." in md
-        assert f"- [x] [SUBTASK] Subtask (#{tree['subtask']['id']}) — done" in md
+        assert "- [x] [SUBTASK] Subtask (HOMELAB-3) — done" in md
 
     def test_project_lists_tasks(self, client, tree):
         md = client.get(f"/api/v1/tickets/{tree['project']['id']}/export").text
         assert "## Tasks" in md
-        assert f"- [ ] [TASK] Task (#{tree['task']['id']}) — to-do" in md
+        assert "- [ ] [TASK] Task (HOMELAB-2) — to-do" in md
 
     def test_missing(self, client):
         assert client.get("/api/v1/tickets/999/export").status_code == 404
+
+
+class TestNumbersAndKeys:
+    def test_sequential_per_board(self, tree):
+        assert [tree[k]["number"] for k in ("project", "task", "subtask")] == [1, 2, 3]
+        assert [tree[k]["key"] for k in ("project", "task", "subtask")] == [
+            "HOMELAB-1", "HOMELAB-2", "HOMELAB-3",
+        ]
+
+    def test_boards_number_independently(self, api, tree):
+        other = api.project("P", board=api.board("Other", key="oth"))
+        assert other["key"] == "OTH-1"
+        assert api.ticket("T", parent_id=tree["project"]["id"])["key"] == "HOMELAB-4"
+
+    def test_numbers_not_reused_after_delete(self, client, api, tree):
+        client.delete(f"/api/v1/tickets/{tree['subtask']['id']}")
+        assert api.ticket("S2", "subtask", parent_id=tree["task"]["id"])["key"] == "HOMELAB-4"
+
+    def test_failed_create_does_not_use_a_number(self, client, api, tree):
+        client.post("/api/v1/tickets", json={"name": "bad", "ticket_type": "subtask", "parent_id": tree["project"]["id"]})
+        assert api.ticket("Good", parent_id=tree["project"]["id"])["key"] == "HOMELAB-4"
+
+    def test_key_and_number_not_settable(self, client, tree):
+        r = client.post("/api/v1/tickets", json={
+            "name": "x", "ticket_type": "task", "parent_id": tree["project"]["id"],
+            "key": "HOMELAB-99", "number": 99,
+        })
+        assert r.json()["key"] == "HOMELAB-4"
+        r = client.patch(f"/api/v1/tickets/{tree['task']['id']}", json={"key": "X-1", "number": 7})
+        assert (r.json()["key"], r.json()["number"]) == ("HOMELAB-2", 2)
+
+    @pytest.mark.parametrize("key", ["HOMELAB-2", "homelab-2", " Homelab-2 "])
+    def test_by_key(self, client, tree, key):
+        r = client.get(f"/api/v1/tickets/by-key/{key}")
+        assert r.status_code == 200
+        assert r.json()["id"] == tree["task"]["id"]
+
+    @pytest.mark.parametrize("key", ["HOMELAB-99", "NOPE-1", "garbage"])
+    def test_by_key_missing(self, client, tree, key):
+        r = client.get(f"/api/v1/tickets/by-key/{key}")
+        assert r.status_code == 404

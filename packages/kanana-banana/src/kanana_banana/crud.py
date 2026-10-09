@@ -201,6 +201,13 @@ def create_ticket(session: Session, ticket_create: TicketCreate) -> Ticket:
     ticket = Ticket.model_validate(ticket_create)
     # Ensure board_id is set (important for tasks/subtasks that inherit it)
     ticket.board_id = board_id
+
+    # Take the board's next number. It only ever increases, so numbers aren't reused.
+    board = session.get(Board, board_id)
+    ticket.number = board.next_number
+    ticket.key = f"{board.key}-{board.next_number}"
+    board.next_number += 1
+    session.add(board)
     session.add(ticket)
     session.commit()
     session.refresh(ticket)
@@ -216,6 +223,16 @@ def get_ticket(session: Session, ticket_id: int) -> Optional[Ticket]:
     statement = (
         select(Ticket)
         .where(Ticket.id == ticket_id)
+        .options(selectinload(Ticket.children))
+    )
+    return session.exec(statement).first()
+
+
+def get_ticket_by_key(session: Session, key: str) -> Optional[Ticket]:
+    """Get a ticket by key (HML-42), case-insensitively. Returns None if not found."""
+    statement = (
+        select(Ticket)
+        .where(Ticket.key == key.strip().upper())
         .options(selectinload(Ticket.children))
     )
     return session.exec(statement).first()
@@ -281,6 +298,9 @@ def update_ticket(
         resolved_board_id = validate_hierarchy(
             session, ticket.ticket_type, new_parent_id, new_board_id
         )
+        # Keys embed the board key, so tickets stay on the board they were created on
+        if resolved_board_id != ticket.board_id:
+            raise HierarchyError("Tickets can't move between boards.")
         update_data["board_id"] = resolved_board_id
 
     # Apply updates

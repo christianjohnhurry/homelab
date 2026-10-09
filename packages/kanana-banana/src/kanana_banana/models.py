@@ -46,6 +46,8 @@ class Board(SQLModel, table=True):
     description: str = Field(default="")
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
+    # Next ticket number on this board. Only ever increases, so numbers are never reused.
+    next_number: int = Field(default=1)
 
     # Relationship: a board has many tickets (specifically, projects)
     # The back_populates="board" links to Ticket.board
@@ -143,6 +145,10 @@ class Ticket(TicketBase, table=True):
     """
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    # Per-board number and its key (HML-42), assigned on create. Tickets never
+    # move between boards, so a key is fixed for life, like the branch name.
+    number: Optional[int] = Field(default=None)
+    key: Optional[str] = Field(default=None, max_length=60, unique=True, index=True)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
@@ -185,8 +191,10 @@ class TicketUpdate(SQLModel):
 
 
 class TicketRead(TicketBase):
-    """Schema for API responses. Includes id and timestamps."""
+    """Schema for API responses. Includes id, key and timestamps."""
 
     id: int
+    number: int
+    key: str
     created_at: datetime
     updated_at: datetime

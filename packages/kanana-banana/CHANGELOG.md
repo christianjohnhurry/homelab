@@ -9,6 +9,8 @@ Versions before 0.1.1 predate this changelog.
 ## [Unreleased]
 
 ### Changed
+- **BREAKING:** Tickets can't move between boards, because their keys embed the board key. Re-parenting within a board still works.
+- Markdown exports refer to tickets by key (`HML-42`) instead of `#id`.
 - **BREAKING:** The database now lives at `~/.local/share/kanana-banana/kanana_banana.db` (or under `$XDG_DATA_HOME`) instead of the directory the server was started from, so the board is the same wherever you start it. An old `kanana_banana.db` is not migrated. Point `KANANA_BANANA_DATABASE_URL` at it to keep using it.
 
 ### Removed
@@ -16,6 +18,9 @@ Versions before 0.1.1 predate this changelog.
 
 ### Added
 - Board keys: every board has a unique key of letters (any length, stored uppercase, e.g. `HML`) that prefixes its ticket keys and branch names. The key is required when creating a board and can't be changed afterwards. `GET /api/v1/boards?key=HML` finds a board by key. The board form shows the server's error when a key is invalid or taken.
+- Per-board ticket numbers: every ticket gets the next number on its board and a key such as `HML-42`, returned as `number` and `key`. Numbers are never reused.
+- `GET /api/v1/tickets/by-key/{key}` looks up a ticket by key, case-insensitively.
+- Ticket keys are shown on cards and in detail views.
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 
 ## [0.1.1] - 2026-10-10

@@ -44,6 +44,21 @@ def list_tickets(
     )
 
 
+@router.get("/by-key/{key}", response_model=TicketRead)
+def get_ticket_by_key(
+    key: str,
+    session: Session = Depends(get_session),
+) -> Ticket:
+    """Get a single ticket by key, e.g. HML-42 (case-insensitive)."""
+    ticket = crud.get_ticket_by_key(session, key)
+    if ticket is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket {key.upper()} not found",
+        )
+    return ticket
+
+
 @router.get("/{ticket_id}", response_model=TicketRead)
 def get_ticket(
     ticket_id: int,

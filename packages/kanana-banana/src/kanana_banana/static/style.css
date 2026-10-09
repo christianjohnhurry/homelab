@@ -256,6 +256,14 @@ main {
     letter-spacing: 0.04em;
 }
 
+.ticket-key {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
 .badge-project {
     background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
     color: #f0f8ec;

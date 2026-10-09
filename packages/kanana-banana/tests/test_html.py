@@ -112,3 +112,10 @@ def test_delete_ticket_form(client, tree):
 def test_openapi_version_matches_package(client):
     from kanana_banana import __version__
     assert client.get("/openapi.json").json()["info"]["version"] == __version__
+
+
+def test_keys_shown_on_cards_and_details(client, tree):
+    board_html = client.get(f"/boards/{tree['board']['id']}").text
+    assert '<span class="ticket-key">HOMELAB-2</span>' in board_html
+    for name, key in [("project", "HOMELAB-1"), ("task", "HOMELAB-2"), ("subtask", "HOMELAB-3")]:
+        assert f'<span class="ticket-key">{key}</span>' in client.get(f"/tickets/{tree[name]['id']}").text

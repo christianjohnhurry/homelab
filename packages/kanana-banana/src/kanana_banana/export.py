@@ -52,7 +52,7 @@ def export_ticket_markdown(session: Session, ticket_id: int) -> str | None:
     lines.append("")
 
     # Metadata section
-    lines.append(f"- **ID:** {ticket.id}")
+    lines.append(f"- **Key:** {ticket.key}")
     lines.append(f"- **Type:** {ticket.ticket_type.value}")
     lines.append(f"- **Status:** {ticket.status.value}")
 
@@ -60,7 +60,7 @@ def export_ticket_markdown(session: Session, ticket_id: int) -> str | None:
         parent = crud.get_ticket(session, ticket.parent_id)
         if parent:
             lines.append(
-                f"- **Parent:** [{parent.ticket_type.value.upper()}] {parent.name} (#{parent.id})"
+                f"- **Parent:** [{parent.ticket_type.value.upper()}] {parent.name} ({parent.key})"
             )
 
     if ticket.board and ticket.board.repo_url:
@@ -86,7 +86,7 @@ def export_ticket_markdown(session: Session, ticket_id: int) -> str | None:
             checkbox = status_checkbox(child.status)
             status_text = child.status.value
             lines.append(
-                f"- {checkbox} [{child.ticket_type.value.upper()}] {child.name} (#{child.id}) — {status_text}"
+                f"- {checkbox} [{child.ticket_type.value.upper()}] {child.name} ({child.key}) — {status_text}"
             )
         lines.append("")
 
@@ -137,7 +137,7 @@ def export_project_full_markdown(session: Session, project_id: int) -> str | Non
             checkbox = status_checkbox(task.status)
 
             lines.append(
-                f"### {checkbox} [{task.ticket_type.value.upper()}] {task.name} (#{task.id}) — {task.status.value}"
+                f"### {checkbox} [{task.ticket_type.value.upper()}] {task.name} ({task.key}) — {task.status.value}"
             )
 
             if task.description:
@@ -150,7 +150,7 @@ def export_project_full_markdown(session: Session, project_id: int) -> str | Non
                 for subtask in full_task.children:
                     sub_checkbox = status_checkbox(subtask.status)
                     lines.append(
-                        f"- {sub_checkbox} {subtask.name} (#{subtask.id}) — {subtask.status.value}"
+                        f"- {sub_checkbox} {subtask.name} ({subtask.key}) — {subtask.status.value}"
                     )
 
             lines.append("")
