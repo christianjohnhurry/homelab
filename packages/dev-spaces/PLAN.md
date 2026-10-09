@@ -135,11 +135,117 @@ dev-spaces follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATC
   - **PATCH** for bug fixes and internal changes.
 - **`1.0.0`:** once the command set and `config.toml` format are settled and used daily.
 - **Base image:** tagged with the dev-spaces version (`dev-spaces-base:<version>`), so a container's labels show which image built it.
+- **No release without tests:** the version is only bumped when the test suite covers the release's changes and `pixi run test-dev-spaces` passes.
 - **Release steps:**
-  1. Bump `version` in `pyproject.toml`.
-  2. Move `[Unreleased]` entries in `CHANGELOG.md` under the new version and date.
-  3. Commit as `chore(dev-spaces): release vX.Y.Z`.
-  4. Tag `dev-spaces-vX.Y.Z`. The tag is prefixed because the homelab repo holds several packages.
+  1. Run `pixi run test-dev-spaces`. Everything must pass.
+  2. Bump `version` in `pyproject.toml`.
+  3. Move `[Unreleased]` entries in `CHANGELOG.md` under the new version and date.
+  4. Commit as `chore(dev-spaces): release vX.Y.Z`.
+  5. Tag `dev-spaces-vX.Y.Z`. The tag is prefixed because the homelab repo holds several packages.
+
+## Testing
+
+**pytest**, in a pixi `test` feature so it never ships with the package. Run with
+`pixi run test-dev-spaces`. Tests live in `packages/dev-spaces/tests/`.
+
+Two tiers:
+
+| Tier | Needs | Runs | Marker |
+|------|-------|------|--------|
+| **Unit** | nothing: Docker, git and the network are faked | always, in seconds | — |
+| **Integration** | Docker Desktop, network, a real `GH_TOKEN` | opt-in: `pixi run test-dev-spaces -m docker` | `@pytest.mark.docker` |
+
+### Approach
+- **Config:** each test gets a fresh `tmp_path` through `DEV_SPACES_CONFIG_DIR`, so the real `~/.config/dev-spaces` is never touched.
+- **Docker:** a `FakeDocker` fixture replaces `docker.run`, `stream` and `inspect`. It records every call and returns scripted results, so tests can assert both the outcome and the exact docker commands.
+- **git:** `subprocess.run` is monkeypatched for `ls-remote`, with canned output.
+- **CLI:** commands run through Typer's `CliRunner`, with prompt answers fed through `input=`.
+
+### v0.1.0 test set (unit tier)
+
+**`branches`**
+- `parse_repo`:
+  - `owner/repo`, https with and without `.git`, a trailing slash, and SSH URLs all normalise.
+  - Surrounding whitespace is trimmed.
+  - Bad input raises: no owner, another host, extra path segments.
+- `match`:
+  - Case-insensitive.
+  - No matches gives `[]`.
+  - Several matches keep their order.
+  - An empty prefix matches everything.
+- `container_name`:
+  - Takes the last segment and lowercases it.
+  - Special characters become `-`.
+  - Edge punctuation is stripped.
+  - Raises when nothing usable is left (`feat/!!!`).
+- `remote_branches` / `default_branch`:
+  - Parse canned `ls-remote` output (including peeled refs and non-head refs).
+  - A non-zero exit raises `BranchError`.
+- **Security:**
+  - The token never appears in the git argv or in error messages.
+  - The auth header base64-decodes to `x-access-token:<token>`.
+
+**`config`**
+- `init`:
+  - Creates every file.
+  - Directory permissions are `700` and `secrets.env` is `600`.
+  - A second run reports "exists" and leaves edited files untouched.
+  - A git name with quotes or backslashes still produces valid TOML.
+- `load`:
+  - Round-trips the template.
+  - Missing keys fall back to defaults.
+  - A missing file raises `ConfigError`.
+- `read_secrets`:
+  - Skips comments and blank lines.
+  - A value containing `=` is kept whole.
+  - Quotes are not stripped, matching `--env-file`.
+- `github_token`: raises when empty.
+- `check_secrets_permissions`: warns at `644`, silent at `600`.
+
+**`deps`**
+- `detect` returns:
+  - `pixi install` for `pixi.toml`
+  - `pixi install` for `[tool.pixi]` in `pyproject.toml`
+  - `uv sync` for `uv.lock`
+  - `None` for none of them
+- pixi wins over uv when both are present.
+
+**`cli`**
+- `--version` prints the package version.
+- `create`, argument checks:
+  - Fails on both a prefix and `--new`, and on neither.
+  - Fails when the image is missing, the container exists, or the `--new` branch already exists.
+  - None of these failures create a container.
+- `_resolve_branch`:
+  - One match is returned without prompting.
+  - No match asks again until something matches.
+  - Several matches return the picked one.
+  - An out-of-range pick is asked again.
+- `create`, happy path:
+  - Docker calls happen in the right order: `run` with labels, ports, `--init` and `--env-file`, then dotfiles, `gh auth setup-git`, clone, checkout.
+  - `--new` uses `switch --no-track --create`.
+- `create`, failures:
+  - A failed clone runs `rm --force` on the container.
+  - A failed install only warns and keeps the container.
+- `list`:
+  - Table output from fake inspect data.
+  - A stopped container shows the label branch.
+  - The empty state has its own message.
+- `ports`:
+  - Formats `localhost` URLs.
+  - Fails on a stopped container.
+- `_get`: rejects unknown names and containers without the dev-spaces label.
+- `remove`:
+  - Refuses on uncommitted, unpushed or stashed work and lists each kind.
+  - Removes a clean container.
+  - `--force` skips the check.
+  - A stopped container is started for the check and stopped again when removal is refused.
+  - No check is done when there's no repo inside.
+
+### Later (integration tier)
+End-to-end against a real repo, replacing the manual smoke tests:
+- `create`, `list`, `shell` (run a command), `ports`, `stop`, `start`, then `remove`, plus refusing with planted work.
+- A GitHub Actions workflow for the unit tier on every push.
 
 ## Changelog
 
@@ -162,7 +268,9 @@ Build in this order. Each step is one commit with its changelog entry.
 5. **`create`:** run, labels, ports, secrets, dotfiles, clone, checkout / `--new`, dependency install
 6. **`list`, `shell`, `ports`, `start`, `stop`**
 7. **`remove`** with the safety check
-8. **README** and release `0.1.0`
+8. **README**
+9. **Tests:** pytest setup and the v0.1.0 unit test set (see Testing)
+10. **Release `0.1.0`**
 
 ### Later
 - Kanana Banana integration (create branches and containers from tickets)
