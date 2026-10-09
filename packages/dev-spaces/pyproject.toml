@@ -16,3 +16,10 @@ requires = ["hatchling"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dev_spaces"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not docker'"
+markers = [
+    "docker: needs Docker Desktop, network and a real GH_TOKEN (opt in with -m docker)",
+]

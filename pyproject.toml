@@ -18,3 +18,13 @@ kanana-banana = { path = "packages/kanana-banana", editable = true }
 dev-spaces = { path = "packages/dev-spaces", editable = true }
 
 [tool.pixi.tasks]
+
+[tool.pixi.feature.test.pypi-dependencies]
+pytest = ">=8"
+
+[tool.pixi.feature.test.tasks]
+test-dev-spaces = "pytest packages/dev-spaces/tests"
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+test = { features = ["test"], solve-group = "default" }
