@@ -25,6 +25,7 @@ Versions before 0.1.1 predate this changelog.
 - Ticket branches: `POST /api/v1/tickets/{id}/branch` creates the ticket's branch on GitHub, named `{key}-{number}-{slug}` in lowercase (e.g. `hml-42-add-login-flow`), and records it on the ticket as `branch`. Tasks branch from the repo's default branch. Subtasks are stacked on their task's branch, which must exist first. Projects never get branches. A branch is never renamed when its ticket is.
 - The GitHub token is read from `~/.config/kanana-banana/secrets.env` (`GH_TOKEN=`, needs Contents: read/write). `KANANA_BANANA_CONFIG_DIR` overrides the location.
 - Ticket detail views show the branch.
+- `kb`, a command-line client for the REST API (`pixi run kb`), starting with `kb board add KEY NAME [--repo URL]` and `kb board list [--json]`. It reaches the server at `KB_URL` (default `http://127.0.0.1:8000`) and says how to start it if it isn't running.
 - Plan for 0.2.0 (`PLAN.md`): the `kb` CLI, board keys, per-board ticket numbers and ticket branches.
 
 ## [0.1.1] - 2026-10-10

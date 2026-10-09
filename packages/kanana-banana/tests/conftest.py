@@ -59,3 +59,21 @@ def api(client):
             return self.ticket(name, "project", board_id=board["id"], **fields)
 
     return Api()
+
+
+@pytest.fixture
+def kb(client, monkeypatch):
+    """Run `kb` against the in-process app: the CLI's HTTP client is the TestClient."""
+    from typer.testing import CliRunner
+
+    from kanana_banana import cli
+
+    monkeypatch.setattr(cli, "make_client", lambda: client)
+    # No git repo by default, so board resolution needs --board unless a test sets one
+    monkeypatch.setattr(cli, "git_origin_repo", lambda: None)
+    runner = CliRunner()
+
+    def run(*args: str, input: str | None = None):
+        return runner.invoke(cli.app, list(args), input=input)
+
+    return run
