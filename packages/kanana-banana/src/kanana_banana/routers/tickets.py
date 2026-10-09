@@ -41,22 +41,26 @@ def list_tickets(
     ticket_type: Optional[TicketType] = None,
     status: Optional[TicketStatus] = None,
     parent_id: Optional[int] = None,
+    board_id: Optional[int] = None,
     session: Session = Depends(get_session),
 ) -> list[Ticket]:
     """
-    List all tickets with optional filters.
+    List all tickets with optional filters, ordered by board and number.
 
     Query parameters:
     - ticket_type: Filter by project/task/subtask
     - status: Filter by to-do/in-progress/on-hold/done
     - parent_id: Filter by parent ticket id
+    - board_id: Filter by board id
     """
-    return crud.list_tickets(
+    tickets = crud.list_tickets(
         session,
         ticket_type=ticket_type,
         status=status,
         parent_id=parent_id,
+        board_id=board_id,
     )
+    return sorted(tickets, key=lambda t: (t.board_id or 0, t.number or 0))
 
 
 @router.get("/by-key/{key}", response_model=TicketRead)

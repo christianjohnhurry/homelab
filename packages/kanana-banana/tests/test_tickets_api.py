@@ -279,3 +279,12 @@ class TestNumbersAndKeys:
     def test_by_key_missing(self, client, tree, key):
         r = client.get(f"/api/v1/tickets/by-key/{key}")
         assert r.status_code == 404
+
+
+class TestListByBoard:
+    def test_board_filter_and_order(self, client, api, tree):
+        other = api.project("Elsewhere", board=api.board("Other"))
+        api.ticket("Late task", parent_id=tree["project"]["id"])
+        r = client.get("/api/v1/tickets", params={"board_id": tree["board"]["id"]})
+        assert [t["key"] for t in r.json()] == ["HOMELAB-1", "HOMELAB-2", "HOMELAB-3", "HOMELAB-4"]
+        assert other["key"] not in {t["key"] for t in r.json()}
