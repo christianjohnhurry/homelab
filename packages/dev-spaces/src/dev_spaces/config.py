@@ -57,6 +57,27 @@ def load() -> Config:
     )
 
 
+def read_secrets() -> dict[str, str]:
+    """Parse secrets.env as docker --env-file does: KEY=value, values literal."""
+    path = secrets_path()
+    if not path.exists():
+        raise ConfigError(f"{path} not found. Run `dev-spaces init` first.")
+    secrets = {}
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key, value = line.split("=", 1)
+            secrets[key.strip()] = value
+    return secrets
+
+
+def github_token() -> str:
+    token = read_secrets().get("GH_TOKEN", "")
+    if not token:
+        raise ConfigError(f"GH_TOKEN is empty in {secrets_path()}.")
+    return token
+
+
 def check_secrets_permissions() -> str | None:
     """Return a warning if secrets.env is readable by anyone but the owner."""
     path = secrets_path()
