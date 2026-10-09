@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-09
+
 ### Fixed
 - An out-of-range pick from the branch list asks again instead of crashing.
 - `create` reports a missing `secrets.env` as an error instead of a traceback.

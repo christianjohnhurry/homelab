@@ -1,6 +1,6 @@
 [project]
 name = "dev-spaces"
-version = "0.0.0"
+version = "0.1.0"
 description = "Sandboxed Docker containers per ticket: clone, checkout, install, work, destroy."
 requires-python = ">= 3.12"
 dependencies = [
